@@ -16,3 +16,23 @@ function tsvParser(str) {
 
     return tsv_data;
 }
+
+function cacheTimeStampedData(name, obj) {
+    let objTimeWrapper = {
+        time: new Date(),
+        data: JSON.stringify(obj)
+    }
+    localStorage.setItem(name, JSON.stringify(objTimeWrapper));
+}
+
+function retrieveCachedIfExists(name) {
+    let cached = localStorage.getItem(name); // check localStorage for previously cached object wrappers of this name.
+    let parsedWrapper = cached ? JSON.parse(cached) : null; // if it exists, parse the wrapper.
+
+    if (parsedWrapper && new Date() - parsedWrapper.time > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
+        localStorage.removeItem(name);
+        parsedWrapper = null;
+    }
+
+    return parsedWrapper ? JSON.parse(parsedWrapper.data) : null; // return original object or null
+}
