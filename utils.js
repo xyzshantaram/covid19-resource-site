@@ -5,8 +5,10 @@ function tsvParser(tsv) {
 
     lines.slice(1).forEach(line => {
         let fields = line.split("\t");
+        // Entry that needs to be added into tsv_data
         let entry = {};
         for (let i = 0; i < field_names.length; i++) {
+            // mapping each field name to it's respective field
             entry[field_names[i]] = fields[i];
         }
 
