@@ -25,8 +25,8 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
     let getUrl = `${URL_BASE}/dl?${params.toString()}`; // loading through the proxy for CORS reasons
     console.log(getUrl);
     fetch(getUrl, {
-            method: "GET",
-        })
+        method: "GET",
+    })
         .then(response => {
             return response.json();
         })
@@ -139,6 +139,60 @@ function loadStates(next) {
     setTimeout(indicesLoadPoller, 100, 0);
 }
 
+function createElementWithClass(type, class_name, text, style) {
+    let element = document.createElement(type);
+    element.className = class_name;
+    if (style) element.style = style;
+    if (text) element.textContent = text;
+    return element;
+}
+
+function renderButtons(resources) {
+    let div = document.getElementById("resources");
+    div.textContent = "";
+
+    resources.forEach(resource => {
+        let button = createElementWithClass(
+            "button",
+            "btn btn-outline-info",
+            resource
+        );
+        div.appendChild(button);
+    });
+}
+
+function renderCard(obj) {
+    let container = document.getElementById("information");
+
+    let card_markup = `
+<div class="card-body pb-2">
+    <div class="d-flex flex-sm-row flex-column justify-content-between">
+        <div>
+            <h5 class="fs-5 text-wrap">${obj.name}</h5>
+            <h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-user" style="margin-right: 5px;"></i>${obj.individual}
+            </h6>
+            <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
+                <i class="fas fa-phone" style="margin-right: 5px;"></i>${obj.phone}
+            </h6>
+
+            <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
+                <i class="far fa-compass" style="margin-right: 5px;"></i>${obj.location}
+            </h6>
+        </div>
+        <span class="badge bg-success"
+            style="padding: 1em 1em; height: fit-content; font-weight: 500; width: fit-content;">Verified</span>
+    </div>
+</div>
+    `;
+
+    let card = createElementWithClass("div", "card mt-4");
+    card.innerHTML = card_markup;
+
+    container.appendChild(card);
+
+}
+
 function beginUI() {
     if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
         if (App.loadedStateIndicesCount > 0) {
@@ -152,7 +206,7 @@ function beginUI() {
 
 function init() {
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function(arg1, arg2) {
+        String.prototype.replaceAll = function (arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
