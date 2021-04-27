@@ -2,11 +2,10 @@ const DATA_EXPIRY_TIMEOUT = 18e5; // magic number for 30 minutes
 
 const App = {
     statesLoaded: false,
+    loadedStateIndicesCount: 0,
     data: {
         stateLinks: {},
-        stateIndices: {
-
-        }
+        stateIndices: {}
     }
 }
 
@@ -14,17 +13,16 @@ function getSheetID(url) {
     return url.split("/")[5];
 }
 
-function getFileFromURL(url, sheetName, format, onSuccess, onErr) {
+function getFileFromURL(url, sheetName, onSuccess, onErr) {
     let id = getSheetID(url);
-    let dlFormat = encodeURI(format || "tsv");
     let encodedSheetName = encodeURI(sheetName);
     let params = new URLSearchParams(); // magical API to generate the query string for us
 
     params.set("id", id);
-    params.set("format", dlFormat);
     params.set("sheetName", encodedSheetName);
-
-    let getUrl = `https://googlesheets-proxy.herokuapp.com/dl?${params.toString()}`; // loading through the proxy for CORS reasons
+    const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
+    // const URL_BASE = `http://localhost:3000`
+    let getUrl = `${URL_BASE}/dl?${params.toString()}`; // loading through the proxy for CORS reasons
 
     console.log(getUrl);
     fetch(getUrl, {
@@ -43,38 +41,71 @@ function getFileFromURL(url, sheetName, format, onSuccess, onErr) {
 }
 
 function getStateIndex(stateName) {
+    if (!App.statesLoaded || !App.data.stateLinks) {
+        return;
+    }
+    let stateResourceList = [];
+    let cached = retrieveCachedIfExists(`${stateName}-index`);
+
+    if (cached) {
+        App.loadedStateIndicesCount += 1;
+        App.data.stateIndices[`${stateName}-index`] = cached;
+    } else {
+        function onGetIndexSuccess(data) {
+            if (data.status === "OK") {
+                let rehydratedData = parseTsv(data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n"));
+                console.log(stateName, rehydratedData)
+                for (let item of rehydratedData) {
+                    if (item) stateResourceList.push(item["Category"]);
+                }
+                App.data.stateIndices[`${stateName}-index`] = stateResourceList;
+                cacheTimeStampedData(`${stateName}-index`, App.data[`${stateName}-index`]);
+                App.loadedStateIndicesCount += 1;
+            } else {
+                throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
+            }
+        }
+        getFileFromURL(App.data.stateLinks[stateName], "Index", onGetIndexSuccess);
+    }
+}
+
+function loadStates(next) {
     if (!App.statesLoaded) {
         return null;
     }
 
-    function onIndexGetSuccess(data) {
-        if (data.status === "OK") {
-            let rehydratedData = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
-
-        } else {
-            throw new Error(`Loading sheet for ${stateName} failed with error ${data.status}`);
+    let states = Object.keys(App.data.stateLinks);
+    for (let x of states) {
+        try {
+            console.log(`Attempting to fetch data for state ${x}`);
+            getStateIndex(x);
+        } catch (e) {
+            console.error(`Loading data for state ${x} failed. More info: \n${e}`);
         }
     }
-}
 
-function cacheTimeStampedData(name, obj) {
-    let objTimeWrapper = {
-        time: new Date(),
-        data: JSON.stringify(obj)
-    }
-    localStorage.setItem(name, JSON.stringify(objTimeWrapper));
-}
-
-function retrieveCachedIfExists(name) {
-    let cached = localStorage.getItem(name); // check localStorage for previously cached object wrappers of this name.
-    let parsedWrapper = cached ? JSON.parse(cached) : null; // if it exists, parse the wrapper.
-
-    if (parsedWrapper && new Date() - parsedWrapper.time > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
-        localStorage.removeItem(name);
-        parsedWrapper = null;
+    function indicesLoadPoller(calls) {
+        let count = calls + 1;
+        let getLoadedIndicesCount = () => Object.keys(App.data.stateIndices).length;
+        if (getLoadedIndicesCount() === states.length || count > 100) {
+            next();
+        } else {
+            setTimeout(indicesLoadPoller, 100, count);
+        }
     }
 
-    return parsedWrapper ? JSON.parse(parsedWrapper.data) : null; // return original object or null
+    setTimeout(indicesLoadPoller, 100, 0);
+}
+
+function beginUI() {
+    if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
+        if (App.loadedStateIndicesCount > 0) {
+            console.log("some states couldn't be loaded");
+            // TODO: replace with dialogue box
+        } else {
+            return;
+        }
+    }
 }
 
 function init() {
@@ -88,7 +119,7 @@ function init() {
         }
     }
 
-    const master = "https://docs.google.com/spreadsheets/d/1XxvTvvRsIjkf4dfAZBAIEMm7sTYeiwngHHnl_3eNwk8/edit#gid=0";
+    const master = "https://docs.google.com/spreadsheets/d/1XxvTvvRsIjkf4dfAZBAIEMm7sTYeiwngHHnl_3eNwk8/edit";
 
     let cached = retrieveCachedIfExists('state-links');
     if (cached) {
@@ -106,18 +137,19 @@ function init() {
 
                 App.data.stateLinks = stateDict;
                 App.statesLoaded = true;
-                cacheTimeStampedData("state-links", stateDict)
+                cacheTimeStampedData("state-links", stateDict);
             } else {
                 throw new Error(`Loading master sheet failed failed with error ${data.status}`);
             }
         }
-        getFileFromURL(master, "State wise links", "tsv", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
+        getFileFromURL(master, "State wise links", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
     }
 
     function stateLoadPoller() {
         if (App.statesLoaded) {
             console.log("States loaded."); // continue execution from here.
-            return;
+            console.log(App.data.stateLinks);
+            loadStates(beginUI);
         } else {
             setTimeout(stateLoadPoller, 100);
         }

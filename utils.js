@@ -8,6 +8,7 @@ function parseTsv(str) {
         let entry = {}; // Entry that needs to be added into tsv_data
         for (let i = 0; i < field_names.length; i++) {
             // mapping each field name to it's respective field
+            if (!field_names[i] || !fields[i]) continue;
             entry[field_names[i]] = fields[i];
         }
 
@@ -27,12 +28,16 @@ function cacheTimeStampedData(name, obj) {
 
 function retrieveCachedIfExists(name) {
     let cached = localStorage.getItem(name); // check localStorage for previously cached object wrappers of this name.
-    let parsedWrapper = cached ? JSON.parse(cached) : null; // if it exists, parse the wrapper.
+    let parsedWrapper;
+    try {
+        parsedWrapper = cached ? JSON.parse(cached) : null; // if it exists, parse the wrapper.
+    } catch (e) {
+        console.error("Wrapper parsing error: ", e);
+    }
 
     if (parsedWrapper && new Date() - parsedWrapper.time > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
         localStorage.removeItem(name);
         parsedWrapper = null;
     }
-
-    return parsedWrapper ? JSON.parse(parsedWrapper.data) : null; // return original object or null
+    return parsedWrapper && parsedWrapper.data ? JSON.parse(parsedWrapper.data) : null;
 }
