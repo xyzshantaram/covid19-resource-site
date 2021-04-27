@@ -31,7 +31,7 @@ function getFileFromURL(url, sheetName, format, onSuccess, onErr) {
             method: "GET",
         })
         .then(response => {
-            return response.json()
+            return response.json();
         })
         .then(data => {
             onSuccess(data)
@@ -50,6 +50,7 @@ function getStateIndex(stateName) {
     function onIndexGetSuccess(data) {
         if (data.status === "OK") {
             let rehydratedData = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
+
         } else {
             throw new Error(`Loading sheet for ${stateName} failed with error ${data.status}`);
         }
@@ -98,7 +99,7 @@ function init() {
             if (data.status === "OK") {
                 let rehydratedData = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
                 let stateDict = {} // mapping of states to links. the return value of your dropdown can be used to index this
-                let states = tsvParser(rehydratedData);
+                let states = parseTsv(rehydratedData);
                 for (let state of states) {
                     stateDict[state.Place] = state.Link;
                 }

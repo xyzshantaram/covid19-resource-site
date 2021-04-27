@@ -1,4 +1,4 @@
-function tsvParser(str) {
+function parseTsv(str) {
     let tsv_data = []
     let lines = str.split("\n")
     let field_names = lines[0].split("\t");
