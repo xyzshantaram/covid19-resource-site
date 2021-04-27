@@ -5,7 +5,8 @@ const App = {
     loadedStateIndicesCount: 0,
     data: {
         stateLinks: {},
-        stateIndices: {}
+        stateIndices: {},
+        stateResources: {}
     }
 }
 
@@ -15,15 +16,13 @@ function getSheetID(url) {
 
 function getFileFromURL(url, sheetName, onSuccess, onErr) {
     let id = getSheetID(url);
-    let encodedSheetName = encodeURI(sheetName);
     let params = new URLSearchParams(); // magical API to generate the query string for us
 
     params.set("id", id);
-    params.set("sheetName", encodedSheetName);
-    const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
-    // const URL_BASE = `http://localhost:3000`
+    params.set("sheetName", sheetName);
+    // const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
+    const URL_BASE = `http://localhost:3000`
     let getUrl = `${URL_BASE}/dl?${params.toString()}`; // loading through the proxy for CORS reasons
-
     console.log(getUrl);
     fetch(getUrl, {
             method: "GET",
@@ -51,14 +50,16 @@ function getStateIndex(stateName) {
         App.loadedStateIndicesCount += 1;
         App.data.stateIndices[`${stateName}-index`] = cached;
     } else {
+
+        console.log(`Attempting to fetch data for state ${stateName}`);
+
         function onGetIndexSuccess(data) {
             if (data.status === "OK") {
                 let rehydratedData = parseTsv(data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n"));
-                console.log(stateName, rehydratedData)
                 for (let item of rehydratedData) {
                     if (item) stateResourceList.push(item["Category"]);
                 }
-                App.data.stateIndices[`${stateName}-index`] = stateResourceList;
+                App.data.stateIndices[stateName] = stateResourceList;
                 cacheTimeStampedData(`${stateName}-index`, App.data[`${stateName}-index`]);
                 App.loadedStateIndicesCount += 1;
             } else {
@@ -69,6 +70,48 @@ function getStateIndex(stateName) {
     }
 }
 
+function loadStateResource(stateName, resName) {
+
+    let ret = null;
+    if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
+        if (App.loadedStateIndicesCount > 0) {
+            console.log("some states aren't loaded");
+        } else {
+            return;
+        }
+    }
+
+    if (!(stateName in App.data.stateIndices)) {
+        throw new Error(`State ${stateName} does not exist`);
+    }
+
+    if (!(App.data.stateIndices[stateName].includes(resName))) {
+        throw new Error(`Resource ${resName} not present for state ${stateName}`);
+    }
+
+    function onGetResourceSuccess(data) {
+        setTimeout(resourceLoadPoller, 100);
+        if (data.status === "OK") {
+            let cleaned = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
+            console.log(data.text);
+            ret = parseTsv(cleaned);
+        } else {
+            throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
+        }
+    }
+
+    getFileFromURL(App.data.stateLinks[stateName], resName, onGetResourceSuccess);
+
+    function resourceLoadPoller() {
+        if (!ret) {
+            setTimeout(resourceLoadPoller, 100);
+        } else
+            console.log(ret);
+    }
+
+    return ret;
+}
+
 function loadStates(next) {
     if (!App.statesLoaded) {
         return null;
@@ -77,7 +120,6 @@ function loadStates(next) {
     let states = Object.keys(App.data.stateLinks);
     for (let x of states) {
         try {
-            console.log(`Attempting to fetch data for state ${x}`);
             getStateIndex(x);
         } catch (e) {
             console.error(`Loading data for state ${x} failed. More info: \n${e}`);
