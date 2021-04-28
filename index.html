@@ -23,10 +23,9 @@
             outline: 0;
             box-shadow: none;
         }
-        @media screen and (max-width: 450px) {
-            .res {
-                width: 100%;
-            }
+
+        .head {
+            background: coral;
         }
     </style>
 </head>
@@ -34,7 +33,13 @@
 <body>
     <script src='utils.js'></script>
     <script src='main.js'></script>
-    <div class="container p-3">
+    <div class="conatiner-fluid head p-3">
+        <!-- <h2>COVID RESOURCES INDIA</h2> -->
+        <div class="container mt-3">
+            <h3>Select State:   </h3>
+        </div>
+    </div>
+    <div class="container p-3" style="margin-top: -30px;">
         <div id="states">
             <select id="states-dropdown" class="form-select" aria-label="Select a state" onchange="renderStateResources()">
                 <option selected>---</option>
