@@ -26,17 +26,14 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
     console.log(getUrl);
     fetch(getUrl, {
         method: "GET",
-    })
-        .then(response => {
-            return response.json();
-        })
-        .then(data => {
-            onSuccess(data)
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            if (onErr) onErr(err);
-        });
+    }).then(response => {
+        return response.json();
+    }).then(data => {
+        onSuccess(data)
+    }).catch((error) => {
+        console.error('Error:', error);
+        if (onErr) onErr(err);
+    });
 }
 
 function getStateIndex(stateName) {
@@ -163,7 +160,6 @@ function renderButtons(resources) {
 
 function renderCard(obj) {
     let container = document.getElementById("information");
-
     let card_markup = `
 <div class="card-body pb-2">
     <div class="d-flex flex-sm-row flex-column justify-content-between">
@@ -206,7 +202,7 @@ function beginUI() {
 
 function init() {
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function (arg1, arg2) {
+        String.prototype.replaceAll = function(arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
