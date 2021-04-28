@@ -20,8 +20,7 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
 
     params.set("id", id);
     params.set("sheetName", sheetName);
-    // const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
-    const URL_BASE = `http://localhost:3000`
+    const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
     let getUrl = `${URL_BASE}/dl?${params.toString()}`; // loading through the proxy for CORS reasons
     console.log(getUrl);
     fetch(getUrl, {
@@ -210,8 +209,8 @@ function renderStateResources() {
 
     let dropdownValue = document.getElementById("states-dropdown").value;
     if (dropdownValue != "---") {
-        renderButtons(App.data.stateIndices[dropdownValue+"-index"]);
-        console.log(App.data.stateIndices[dropdownValue+"-index"]);
+        renderButtons(App.data.stateIndices[dropdownValue]);
+        console.log(App.data.stateIndices[dropdownValue]);
     }
 }
 
