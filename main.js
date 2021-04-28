@@ -189,8 +189,38 @@ function renderCard(obj) {
 
 }
 
+function populateStateDropdown() {
+    // Inserts State Options into the states dropdown at the start of the page
+
+    let statesDropdown = document.getElementById("states-dropdown");
+    statesDropdown.innerHTML = "<option>---</option>"; // Initialize dropdown with a placeholder value
+
+    Object.keys(App.data.stateIndices).forEach(element => {
+        // Creates an option tag for each state in the stateIndices array
+        let state = element.split('-')[0];
+        let option = document.createElement("option");
+        option.innerText = state;
+        statesDropdown.appendChild(option);
+    })
+}
+
+function renderStateResources() {
+
+    // Renders relevant buttons and cards when a state is selected from the states dropdown
+
+    let dropdownValue = document.getElementById("states-dropdown").value;
+    if (dropdownValue != "---") {
+        renderButtons(App.data.stateIndices[dropdownValue+"-index"]);
+        console.log(App.data.stateIndices[dropdownValue+"-index"]);
+    }
+}
+
 function beginUI() {
+    // Entry point for rendering
+
     if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
+        // Error Handling
+
         if (App.loadedStateIndicesCount > 0) {
             console.log("some states couldn't be loaded");
             // TODO: replace with dialogue box
@@ -198,6 +228,10 @@ function beginUI() {
             return;
         }
     }
+
+    // Rendering code on success
+
+    populateStateDropdown();
 }
 
 function init() {
