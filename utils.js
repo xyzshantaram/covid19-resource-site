@@ -7,8 +7,8 @@ function parseTsv(str) {
         let fields = line.split("\t");
         let entry = {}; // Entry that needs to be added into tsv_data
         for (let i = 0; i < field_names.length; i++) {
-            // mapping each field name to it's respective field
-            if (!field_names[i] || !fields[i]) continue;
+            // mapping each field name to it's respective field, if field name is invalid then skip that iteration
+            if (!field_names[i]) continue;
             entry[field_names[i]] = fields[i];
         }
 
