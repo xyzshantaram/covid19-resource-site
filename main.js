@@ -145,12 +145,13 @@ function createElementWithClass(type, class_name, text, style) {
 
 function renderButtons(resources) {
     let div = document.getElementById("resources");
+    div.classList.add("d-flex", "flex-wrap");
     div.textContent = "";
 
     resources.forEach(resource => {
         let button = createElementWithClass(
             "button",
-            "btn btn-outline-info m-1 res",
+            "btn btn-outline-info m-1",
             resource
         );
         div.appendChild(button);
