@@ -150,7 +150,7 @@ function renderButtons(resources) {
     resources.forEach(resource => {
         let button = createElementWithClass(
             "button",
-            "btn btn-outline-info",
+            "btn btn-outline-info m-1 res",
             resource
         );
         div.appendChild(button);
