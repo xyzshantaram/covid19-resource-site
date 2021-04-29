@@ -1,3 +1,40 @@
+* {
+    font-family: Roboto Slab;
+}
+
+.card {
+    border-radius: .5em !important;
+}
+
+.btn-check:focus+.btn,
+.btn:focus {
+    outline: 0;
+    box-shadow: none;
+}
+
+.head {
+    background: #EFEFEF;
+}
+
+.container {
+    border-radius: 6px;
+    max-width: 65%;
+}
+
+@media screen and (max-width: 500px) {
+    .container {
+        max-width: 90%;
+    }
+}
+
+#resource-group {
+    display: none;
+}
+
+#cities-group {
+    display: none;
+}
+
 .lds-dual-ring {
     display: inline-block;
     width: 80px;
