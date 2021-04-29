@@ -146,7 +146,7 @@ function createElementWithClass(type, class_name, text, style) {
 }
 
 function renderButtons(resources) {
-    setElementStyleProp(elem, "display", "block");
+    setElementStyleProp(document.querySelector("resource-group"), "display", "block");
     let div = document.getElementById("resources");
     div.classList.add("d-flex", "flex-wrap");
     div.textContent = "";
