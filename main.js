@@ -69,8 +69,12 @@ function getStateIndex(stateName) {
 }
 
 function loadStateResource(stateName, resName) {
+    let value = null;
 
-    let ret = null;
+    if (App.data.stateResources[stateName][resName]) {
+        return;
+    }
+
     if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
         if (App.loadedStateIndicesCount > 0) {
             console.error("some states aren't loaded");
@@ -92,7 +96,7 @@ function loadStateResource(stateName, resName) {
         if (data.status === "OK") {
             let cleaned = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
             // console.log(data.text);
-            ret = parseTsv(cleaned);
+            value = parseTsv(cleaned);
         } else {
             throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
         }
@@ -101,13 +105,12 @@ function loadStateResource(stateName, resName) {
     getFileFromURL(App.data.stateLinks[stateName], resName, onGetResourceSuccess);
 
     function resourceLoadPoller() {
-        if (!ret) {
+        if (!value) {
             setTimeout(resourceLoadPoller, 100);
-        } else
-            console.log(ret);
+        } else {
+            App.data.stateResources[stateName][resName] = value;
+        }
     }
-
-    return ret;
 }
 
 function loadStates(next) {
@@ -122,6 +125,8 @@ function loadStates(next) {
         } catch (e) {
             throw new Error(`Loading data for state ${x} failed. More info: \n${e}`);
         }
+
+        App.data.stateResources[x] = {};
     }
 
     function indicesLoadPoller(calls) {
@@ -146,8 +151,6 @@ function createElementWithClass(type, class_name, text, style) {
 }
 
 function renderButtons(resources) {
-    console.log(resources);
-    setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
     let essential = document.getElementById("essential-resources");
     let other = document.getElementById("other-resources");
     essential.textContent = "";
@@ -159,13 +162,32 @@ function renderButtons(resources) {
             "btn btn-primary resource-btn",
             resource
         );
+
+        button.onclick = function() {
+            let selectedState = document.getElementById("states-dropdown").value;
+            if (selectedState === "---") return;
+            loadStateResource(selectedState, resource);
+
+            function resourceLoadPoller() {
+                if (!App.data.stateResources[selectedState][resource]) {
+                    Modal.show();
+                    setTimeout(resourceLoadPoller, 100);
+                } else {
+                    let resourceValue = App.data.stateResources[selectedState][resource];
+                    Modal.hide();
+                    renderCard(normaliseResourceData(resourceValue));
+                }
+            }
+
+            setTimeout(resourceLoadPoller, 100);
+        }
+
         resource = resource.trim();
-        let essentialResource = ['Oxygen','Plasma','Beds','Ambulance'];
-        if(essentialResource.includes(resource)) {
+        let essentialResource = ['Oxygen', 'Plasma', 'Beds', 'Ambulance'];
+        if (essentialResource.includes(resource)) {
             button.classList.add('essentialButton');
             essential.appendChild(button);
-        }
-        else
+        } else
             other.appendChild(button);
     });
 }
@@ -180,39 +202,38 @@ function toggleElementDisplay(selector) {
     let elem = document.querySelector(selector);
     if (elem) {
         let d = elem.style.display;
-        (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
+        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
     }
 }
 
 function renderCard(obj) {
-    let container = document.getElementById("information");
-    let card_markup = `
-<div class="card-body pb-2">
-    <div class="d-flex flex-sm-row flex-column justify-content-between">
-        <div>
-            <h5 class="fs-5 text-wrap">${obj.name}</h5>
-            <h6 class="fs-6 text-wrap d-flex align-items-center">
-                <i class="fas fa-user" style="margin-right: 5px;"></i>${obj.individual}
-            </h6>
-            <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
-                <i class="fas fa-phone" style="margin-right: 5px;"></i>${obj.phone}
-            </h6>
+    console.log(obj);
+    /*
+        let container = document.getElementById("information");
+        let card_markup = `
+        <div class="card-body pb-2">
+            <div class="d-flex flex-sm-row flex-column justify-content-between">
+                <div>
+                    <h5 class="fs-5 text-wrap">${obj.name}</h5>
+                    <h6 class="fs-6 text-wrap d-flex align-items-center">
+                        <i class="fas fa-user" style="margin-right: 5px;"></i>${obj.individual}
+                    </h6>
+                    <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
+                        <i class="fas fa-phone" style="margin-right: 5px;"></i>${obj.phone}
+                    </h6>
 
-            <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
-                <i class="far fa-compass" style="margin-right: 5px;"></i>${obj.location}
-            </h6>
-        </div>
-        <span class="badge bg-success"
-            style="padding: 1em 1em; height: fit-content; font-weight: 500; width: fit-content;">Verified</span>
-    </div>
-</div>
-    `;
-
-    let card = createElementWithClass("div", "card mt-4");
-    card.innerHTML = card_markup;
-
-    container.appendChild(card);
-
+                    <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
+                        <i class="far fa-compass" style="margin-right: 5px;"></i>${obj.location}
+                    </h6>
+                </div>
+                <span class="badge bg-success"
+                    style="padding: 1em 1em; height: fit-content; font-weight: 500; width: fit-content;">Verified</span>
+            </div>
+        </div>`;
+        let card = createElementWithClass("div", "card mt-4");
+        card.innerHTML = card_markup;
+        container.appendChild(card);
+    */
 }
 
 function populateStateDropdown() {
@@ -231,12 +252,13 @@ function populateStateDropdown() {
 }
 
 function renderStateResources() {
-
     // Renders relevant buttons and cards when a state is selected from the states dropdown
-
     let dropdownValue = document.getElementById("states-dropdown").value;
     if (dropdownValue != "---") {
+        setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
         renderButtons(App.data.stateIndices[dropdownValue]);
+    } else {
+        setElementStyleProp(document.querySelector("#resource-group"), "display", "none");
     }
 }
 
@@ -245,8 +267,16 @@ function setModalContent(content) {
     document.getElementById("reusable-modal-content").textContent = content;
 }
 
-function normaliseResourceData() {
+function SetModalSpinnerDisplay(state) {
+    let propString = "none";
+    if (state) propString = "block";
+    let spinner = document.querySelector('#loading-spinner');
+    setElementStyleProp(spinner, display, propString);
+}
 
+function normaliseResourceData(obj) {
+    let ret = obj; // placeholder, populate ret with normalized values/keys
+    return ret;
 }
 
 function beginUI() {
@@ -264,7 +294,7 @@ function beginUI() {
     }
 
     // Rendering code on success
-    Modal.toggle(); // Loading is done, disable modal
+    Modal.hide(); // Loading is done, disable modal
     populateStateDropdown();
 }
 
@@ -280,7 +310,7 @@ function init() {
     Modal.toggle();
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function (arg1, arg2) {
+        String.prototype.replaceAll = function(arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
