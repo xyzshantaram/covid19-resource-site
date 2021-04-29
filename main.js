@@ -154,9 +154,19 @@ function renderButtons(resources) {
     resources.forEach(resource => {
         let button = createElementWithClass(
             "button",
-            "btn btn-outline-info m-1",
+            "btn btn-primary",
             resource
         );
+        let buttonStyleRules = {
+            fontSize: "0.85em",
+            padding: "0.25em",
+            paddingLeft: "0.5em",
+            paddingRight: "0.5em",
+            margin: "0.1em",
+            filter: "saturate(0.65)"
+        }
+
+        Object.assign(button.style, buttonStyleRules);
         div.appendChild(button);
     });
 }
@@ -171,7 +181,7 @@ function toggleElementDisplay(selector) {
     let elem = document.querySelector(selector);
     if (elem) {
         let d = elem.style.display;
-        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
+        (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
     }
 }
 
@@ -271,7 +281,7 @@ function init() {
     Modal.toggle();
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function(arg1, arg2) {
+        String.prototype.replaceAll = function (arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
