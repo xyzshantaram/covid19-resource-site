@@ -1,5 +1,5 @@
 * {
-    font-family: Roboto Slab;
+    font-family: "Roboto Slab", serif;
 }
 
 .card {
@@ -22,12 +22,12 @@
 }
 
 .resource-btn {
-    font-size: 0.85em       !important;
-    padding: 0.25em         !important;
-    padding-left: 0.5em     !important;
-    padding-right: 0.5em    !important;
-    margin: 0.1em           !important;
-    filter: saturate(0.65)  !important;
+    font-size: 0.85em !important;
+    padding: 0.25em !important;
+    padding-left: 0.5em !important;
+    padding-right: 0.5em !important;
+    margin: 0.1em !important;
+    filter: saturate(0.65) !important;
 }
 
 .essentialButton {

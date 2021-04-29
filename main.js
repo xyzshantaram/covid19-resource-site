@@ -167,7 +167,7 @@ function renderButtons(resources) {
             loadStateResource(selectedState, resource, onResLoadSuccess);
 
             function onResLoadSuccess(data) {
-                renderStateResourceData(data);
+                renderStateResourceData(data, selectedState, resource);
                 Modal.hide();
             }
         }
@@ -197,12 +197,48 @@ function toggleElementDisplay(selector) {
 }
 
 function renderCard(obj) {
-    console.log(obj);
+    if (obj.Verified === "no") {
+        return;
+    }
+    let container = document.getElementById("information");
+    let elements = ``;
+
+    for (let key in obj) {
+        if (key === "Verified") continue;
+        if (!Boolean(key) || !Boolean(obj[key])) continue;
+        let elt = `
+        <div>
+            <div class='d-inline fs-5' style='font-weight: 500'>${capitaliseFirstLetter(key)}: </div>
+            <div class='d-inline fs-5' style='font-weight: 400'>${obj[key]}</div>
+        </div>`;
+        elements += elt;
+    }
+
+    let status = obj.Verified === "yes" ? "success" : "warning";
+    let badgeNotice = obj.Verified === "yes" ? "Verified" : "Unverified";
+    let warning = obj.Verified === "yes" ? "" :
+        `<span class='alert alert-warning' style='font-size: 10px'>
+            This lead is unverified. Information is potentially incorrect. Use at your own risk.
+        </span>`;
+    let badge = `<span class="badge bg-${status} mt-2"
+        style="padding: 1em 1em; height: fit-content; font-weight: 500; width: fit-content;">
+        ${badgeNotice}
+    </span>`;
+    elements += badge + warning;
+
+    let card_markup = `
+        <div class="card-body pb-2">
+            <div class="d-flex flex-column align-items-left">
+                ${elements}
+            </div>
+        </div>`;
+    let card = createElementWithClass("div", "card mt-4");
+    card.innerHTML = card_markup;
+    container.appendChild(card);
 }
 
 function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
-
     let statesDropdown = document.getElementById("states-dropdown");
     statesDropdown.innerHTML = "<option>---</option>"; // Initialize dropdown with a placeholder value
 
@@ -226,10 +262,25 @@ function renderStateResourceButtons() {
     }
 }
 
-function renderStateResourceData(list) {
+function renderStateResourceData(list, stateName, resName) {
     // renders cards
+    list.sort(function(a, b) {
+        if (a.Verified && !b.Verified) {
+            console.log(270)
+            return -1;
+        }
+        if (b.Verified && !a.Verified) {
+            console.log(274)
+            return 1;
+        }
+        return 0;
+    });
+    let container = document.getElementById("information");
+    let header = document.querySelector("label[for='information']");
+    header.innerHTML = `Resource list: ${resName} in ${stateName}`;
+    container.innerHTML = "";
     for (let x of list) {
-
+        renderCard(x);
     }
 }
 

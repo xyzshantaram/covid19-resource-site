@@ -1,10 +1,10 @@
 function parseTsv(str) {
     let tsv_data = []
     let lines = str.split("\n")
-    let field_names = lines[0].split("\t");
+    let field_names = lines[0].replaceAll(`"`, "").split("\t");
 
     lines.slice(1).forEach(line => {
-        let fields = line.split("\t");
+        let fields = line.replaceAll(`"`, "").split("\t");
         let entry = {}; // Entry that needs to be added into tsv_data
         for (let i = 0; i < field_names.length; i++) {
             // mapping each field name to its respective field, if field name is invalid then skip that iteration
@@ -36,10 +36,14 @@ function retrieveCachedIfExists(name) {
         console.error("Wrapper parsing error: ", e);
     }
 
-    const DATA_EXPIRY_TIMEOUT = parsedWrapper.timeout || 18e5;
+    const DATA_EXPIRY_TIMEOUT = (parsedWrapper && parsedWrapper.timeout) ? parsedWrapper.timeout : 18e5;
     if (parsedWrapper && new Date() - parsedWrapper.time > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
         localStorage.removeItem(name);
         parsedWrapper = null;
     }
     return parsedWrapper && parsedWrapper.data ? JSON.parse(parsedWrapper.data) : null;
+}
+
+function capitaliseFirstLetter(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
