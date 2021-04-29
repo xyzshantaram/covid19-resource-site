@@ -27,7 +27,6 @@ function cacheTimeStampedData(name, obj) {
 }
 
 function retrieveCachedIfExists(name) {
-    console.log(name);
     let cached = localStorage.getItem(name); // check localStorage for previously cached object wrappers of this name.
     let parsedWrapper;
     try {

@@ -40,12 +40,10 @@ function getStateIndex(stateName) {
     }
     let stateResourceList = [];
     let cached = retrieveCachedIfExists(`${stateName}-index`);
-    console.log(stateName, cached)
 
     if (cached) {
         App.loadedStateIndicesCount += 1;
         App.data.stateIndices[`${stateName}`] = cached;
-        console.log(`cached copy of ${stateName} index found.`);
     } else {
         console.log(`Attempting to fetch data for state ${stateName}`);
 
@@ -71,7 +69,7 @@ function loadStateResource(stateName, resName) {
     let ret = null;
     if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
         if (App.loadedStateIndicesCount > 0) {
-            console.log("some states aren't loaded");
+            console.error("some states aren't loaded");
         } else {
             return;
         }
@@ -118,7 +116,7 @@ function loadStates(next) {
         try {
             getStateIndex(x);
         } catch (e) {
-            console.error(`Loading data for state ${x} failed. More info: \n${e}`);
+            throw new Error(`Loading data for state ${x} failed. More info: \n${e}`);
         }
     }
 
@@ -211,7 +209,6 @@ function renderStateResources() {
     let dropdownValue = document.getElementById("states-dropdown").value;
     if (dropdownValue != "---") {
         renderButtons(App.data.stateIndices[dropdownValue]);
-        console.log(App.data.stateIndices[dropdownValue]);
     }
 }
 
@@ -253,7 +250,6 @@ function init() {
 
     let cached = retrieveCachedIfExists('state-links');
     if (cached) {
-        console.log(`cached copy of state-links found.`);
         App.statesLoaded = true;
         App.data.stateLinks = cached;
     } else {
@@ -279,7 +275,6 @@ function init() {
     function stateLoadPoller() {
         if (App.statesLoaded) {
             console.log("States loaded."); // continue execution from here.
-            console.log(App.data.stateLinks);
             loadStates(beginUI);
         } else {
             setTimeout(stateLoadPoller, 100);
