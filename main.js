@@ -275,7 +275,7 @@ function onStateDropdownChange() {
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
-    let isInvalid = (item) => !Boolean(item.toLocaleLowerCase()) || item.toLocaleLowerCase() === "retry";
+    let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
     list.sort(function(a, b) {
         if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
             return -1;
