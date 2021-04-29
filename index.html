@@ -13,7 +13,16 @@
         integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1d39151f79.js" crossorigin="anonymous"></script>
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;500;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
+        * {
+            font-family: Roboto Slab;
+        }
+
         .card {
             border-radius: .5em !important;
         }
@@ -25,7 +34,17 @@
         }
 
         .head {
-            background: coral;
+            background: #EFEFEF;
+        }
+
+        .container {
+            border-radius: 6px;
+        }
+
+        @media screen and (max-width: 500px) {
+            .container {
+                width: 90%;
+            }
         }
     </style>
 </head>
@@ -33,24 +52,47 @@
 <body>
     <script src='utils.js'></script>
     <script src='main.js'></script>
-    <div class="conatiner-fluid head p-3">
-        <!-- <h2>COVID RESOURCES INDIA</h2> -->
-        <div class="container mt-3">
-            <h3>Select State:   </h3>
+    <nav class="navbar navbar-dark bg-dark mb-3">
+        <div class="container-fluid d-flex align-items-center p-3">
+            <a class="navbar-brand">COVID RESOURCES INDIA</a>
+            <button class="btn btn-outline-success" type="button">More Info</button>
+        </div>
+    </nav>
+
+    <div class="container head p-3 mt-3">
+        <div class="row d-flex">
+            <form>
+                <!-- For States -->
+                <div class="form-group mb-3">
+                    <label for="states-dropdown" class="mb-2">Select State: </label>
+                    <select id="states-dropdown" class="form-select" aria-label="Select a state"
+                        onchange="renderStateResources()">
+                        <option selected>---</option>
+                    </select>
+                </div>
+
+                <!-- Resources -->
+                <div class="form-group mb-3">
+                    <label for="states-dropdown" class="mb-2">Select Resources: </label>
+                    <div id="resources">
+
+                    </div>
+                </div>
+
+                <!-- For Cities -->
+                <div class="form-group">
+                    <label for="cities-dropdown" class="mb-2">Select City: </label>
+                    <select id="cities-dropdown" class="form-select" aria-label="Select a city">
+                        <option selected>---</option>
+                    </select>
+                </div>
+            </form>
         </div>
     </div>
-    <div class="container p-3" style="margin-top: -30px;">
-        <div id="states">
-            <select id="states-dropdown" class="form-select" aria-label="Select a state"
-                onchange="renderStateResources()">
-                <option selected>---</option>
-            </select>
-        </div>
-        <div id="resources">
 
-        </div>
+    <div class="container head p-3 mt-5 h-100">
         <div id="information">
-
+            List of contacts come here...
         </div>
     </div>
 </body>
