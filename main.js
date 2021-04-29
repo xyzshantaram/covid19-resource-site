@@ -89,7 +89,7 @@ function loadStateResource(stateName, resName) {
         setTimeout(resourceLoadPoller, 100);
         if (data.status === "OK") {
             let cleaned = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
-            console.log(data.text);
+            // console.log(data.text);
             ret = parseTsv(cleaned);
         } else {
             throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
@@ -215,6 +215,10 @@ function renderStateResources() {
     }
 }
 
+function normaliseResourceData() {
+
+}
+
 function beginUI() {
     // Entry point for rendering
 
@@ -236,7 +240,7 @@ function beginUI() {
 
 function init() {
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function(arg1, arg2) {
+        String.prototype.replaceAll = function (arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
