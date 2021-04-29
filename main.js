@@ -35,7 +35,6 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
     }).then(response => {
         return response.json();
     }).then(data => {
-        console.log(data.text);
         onSuccess(data)
     }).catch((error) => {
         console.error('Error:', error);
@@ -271,14 +270,13 @@ function renderStateResourceButtons() {
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
-    let isinValid = (item) => !Boolean(item) || item === "retry"
+    let isInvalid = (item) => !Boolean(item) || item === "retry"
     list.sort(function(a, b) {
-        console.log(a, b);
-        if (!isinValid(a.Verified) && isinValid(b.Verified)) {
+        if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
             console.log(270)
             return -1;
         }
-        if (isinValid(a.Verified) && !isinValid(b.Verified)) {
+        if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
             console.log(274)
             return 1;
         }

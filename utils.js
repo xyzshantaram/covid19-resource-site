@@ -17,7 +17,8 @@ function retrieveCachedIfExists(name) {
     }
 
     const DATA_EXPIRY_TIMEOUT = (parsedWrapper && parsedWrapper.timeout) ? parsedWrapper.timeout : 18e5;
-    if (parsedWrapper && new Date() - parsedWrapper.time > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
+    if (parsedWrapper && new Date() - new Date(parsedWrapper.time) > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
+        console.log('data too old, removing')
         localStorage.removeItem(name);
         parsedWrapper = null;
     }
