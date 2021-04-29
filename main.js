@@ -68,7 +68,7 @@ function getStateIndex(stateName) {
     }
 }
 
-function loadStateResource(stateName, resName) {
+function loadStateResource(stateName, resName, onLoadSuccess) {
     let value = null;
 
     if (App.data.stateResources[stateName][resName]) {
@@ -91,26 +91,26 @@ function loadStateResource(stateName, resName) {
         throw new Error(`Resource ${resName} not present for state ${stateName}`);
     }
 
-    function onGetResourceSuccess(data) {
-        setTimeout(resourceLoadPoller, 100);
-        if (data.status === "OK") {
-            let cleaned = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
-            // console.log(data.text);
-            value = parseTsv(cleaned);
-        } else {
-            throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
-        }
-    }
-
-    getFileFromURL(App.data.stateLinks[stateName], resName, onGetResourceSuccess);
-
     function resourceLoadPoller() {
         if (!value) {
             setTimeout(resourceLoadPoller, 100);
         } else {
-            App.data.stateResources[stateName][resName] = value;
+            if (onLoadSuccess) onLoadSuccess(value);
         }
     }
+
+    function onGetResourceSuccess(data) {
+        if (data.status === "OK") {
+            let cleaned = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
+            value = parseTsv(cleaned);
+        } else {
+            throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
+        }
+
+        setTimeout(resourceLoadPoller, 100);
+    }
+
+    getFileFromURL(App.data.stateLinks[stateName], resName, onGetResourceSuccess);
 }
 
 function loadStates(next) {
@@ -166,20 +166,13 @@ function renderButtons(resources) {
         button.onclick = function() {
             let selectedState = document.getElementById("states-dropdown").value;
             if (selectedState === "---") return;
-            loadStateResource(selectedState, resource);
+            Modal.show();
+            loadStateResource(selectedState, resource, onResLoadSuccess);
 
-            function resourceLoadPoller() {
-                if (!App.data.stateResources[selectedState][resource]) {
-                    Modal.show();
-                    setTimeout(resourceLoadPoller, 100);
-                } else {
-                    let resourceValue = App.data.stateResources[selectedState][resource];
-                    Modal.hide();
-                    renderCard(normaliseResourceData(resourceValue));
-                }
+            function onResLoadSuccess(data) {
+                renderCard(normaliseResourceData(data));
+                Modal.hide();
             }
-
-            setTimeout(resourceLoadPoller, 100);
         }
 
         resource = resource.trim();
