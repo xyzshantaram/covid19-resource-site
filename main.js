@@ -22,7 +22,6 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
     params.set("sheetName", sheetName);
     const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
     let getUrl = `${URL_BASE}/dl?${params.toString()}`; // loading through the proxy for CORS reasons
-    console.log(getUrl);
     fetch(getUrl, {
         method: "GET",
     }).then(response => {
@@ -41,12 +40,13 @@ function getStateIndex(stateName) {
     }
     let stateResourceList = [];
     let cached = retrieveCachedIfExists(`${stateName}-index`);
+    console.log(stateName, cached)
 
     if (cached) {
         App.loadedStateIndicesCount += 1;
-        App.data.stateIndices[`${stateName}-index`] = cached;
+        App.data.stateIndices[`${stateName}`] = cached;
+        console.log(`cached copy of ${stateName} index found.`);
     } else {
-
         console.log(`Attempting to fetch data for state ${stateName}`);
 
         function onGetIndexSuccess(data) {
@@ -56,7 +56,7 @@ function getStateIndex(stateName) {
                     if (item) stateResourceList.push(item["Category"]);
                 }
                 App.data.stateIndices[stateName] = stateResourceList;
-                cacheTimeStampedData(`${stateName}-index`, App.data[`${stateName}-index`]);
+                cacheTimeStampedData(`${stateName}-index`, stateResourceList);
                 App.loadedStateIndicesCount += 1;
             } else {
                 throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
@@ -240,7 +240,7 @@ function beginUI() {
 
 function init() {
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function (arg1, arg2) {
+        String.prototype.replaceAll = function(arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
@@ -253,6 +253,7 @@ function init() {
 
     let cached = retrieveCachedIfExists('state-links');
     if (cached) {
+        console.log(`cached copy of state-links found.`);
         App.statesLoaded = true;
         App.data.stateLinks = cached;
     } else {

@@ -7,7 +7,7 @@ function parseTsv(str) {
         let fields = line.split("\t");
         let entry = {}; // Entry that needs to be added into tsv_data
         for (let i = 0; i < field_names.length; i++) {
-            // mapping each field name to it's respective field, if field name is invalid then skip that iteration
+            // mapping each field name to its respective field, if field name is invalid then skip that iteration
             if (!field_names[i]) continue;
             entry[field_names[i]] = fields[i];
         }
@@ -27,6 +27,7 @@ function cacheTimeStampedData(name, obj) {
 }
 
 function retrieveCachedIfExists(name) {
+    console.log(name);
     let cached = localStorage.getItem(name); // check localStorage for previously cached object wrappers of this name.
     let parsedWrapper;
     try {
