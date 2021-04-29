@@ -55,8 +55,7 @@ function getStateIndex(stateName) {
 
                 stateResourceList = rehydratedData.map(
                     categoryItems => categoryItems["Category"] // Move the array up from the nested category field
-                ).filter(word => word.trim().length > 0) // Check if the resource is not empty space
-
+                ).filter(Boolean).filter(word => word.trim().length > 0) // Check if the resource is not empty space
                 App.data.stateIndices[stateName] = stateResourceList;
                 cacheTimeStampedData(`${stateName}-index`, stateResourceList);
                 App.loadedStateIndicesCount += 1;
