@@ -146,28 +146,27 @@ function createElementWithClass(type, class_name, text, style) {
 }
 
 function renderButtons(resources) {
+    console.log(resources);
     setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
-    let div = document.getElementById("resources");
-    div.classList.add("d-flex", "flex-wrap");
-    div.textContent = "";
+    let essential = document.getElementById("essential-resources");
+    let other = document.getElementById("other-resources");
+    essential.textContent = "";
+    other.textContent = "";
 
     resources.sort((x, y) => y.length - x.length).forEach(resource => {
         let button = createElementWithClass(
             "button",
-            "btn btn-primary",
+            "btn btn-primary resource-btn",
             resource
         );
-        let buttonStyleRules = {
-            fontSize: "0.85em",
-            padding: "0.25em",
-            paddingLeft: "0.5em",
-            paddingRight: "0.5em",
-            margin: "0.1em",
-            filter: "saturate(0.65)"
+        resource = resource.trim();
+        let essentialResource = ['Oxygen','Plasma','Beds','Ambulance'];
+        if(essentialResource.includes(resource)) {
+            button.classList.add('essentialButton');
+            essential.appendChild(button);
         }
-
-        Object.assign(button.style, buttonStyleRules);
-        div.appendChild(button);
+        else
+            other.appendChild(button);
     });
 }
 
