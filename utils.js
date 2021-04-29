@@ -1,23 +1,3 @@
-function parseTsv(str) {
-    let tsv_data = []
-    let lines = str.split("\n")
-    let field_names = lines[0].replaceAll(`"`, "").split("\t");
-
-    lines.slice(1).forEach(line => {
-        let fields = line.replaceAll(`"`, "").split("\t");
-        let entry = {}; // Entry that needs to be added into tsv_data
-        for (let i = 0; i < field_names.length; i++) {
-            // mapping each field name to its respective field, if field name is invalid then skip that iteration
-            if (!field_names[i]) continue;
-            entry[field_names[i]] = fields[i];
-        }
-
-        tsv_data.push(entry)
-    });
-
-    return tsv_data;
-}
-
 function cacheTimeStampedData(name, obj, timeout) {
     let objTimeWrapper = {
         time: new Date(),

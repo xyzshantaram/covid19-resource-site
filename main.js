@@ -8,6 +8,14 @@ const App = {
     }
 }
 
+const PAPA_OPTIONS = {
+    header: true,
+    delimiter: ',',
+    newline: '\n',
+    quoteChar: '"',
+    skipEmptyLines: false,
+}
+
 let Modal = undefined
 
 function getSheetID(url) {
@@ -27,6 +35,7 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
     }).then(response => {
         return response.json();
     }).then(data => {
+        console.log(data.text);
         onSuccess(data)
     }).catch((error) => {
         console.error('Error:', error);
@@ -49,8 +58,7 @@ function getStateIndex(stateName) {
 
         function onGetIndexSuccess(data) {
             if (data.status === "OK") {
-                let rehydratedData = parseTsv(data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n"));
-
+                let rehydratedData = Papa.parse(data.text, PAPA_OPTIONS).data;
                 stateResourceList = rehydratedData.map(
                     categoryItems => categoryItems["Category"] // Move the array up from the nested category field
                 ).filter(Boolean).filter(word => word.trim().length > 0) // Check if the resource is not empty space
@@ -98,8 +106,7 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
 
     function onGetResourceSuccess(data) {
         if (data.status === "OK") {
-            let cleaned = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
-            value = parseTsv(cleaned);
+            value = Papa.parse(data.text, PAPA_OPTIONS).data;
         } else {
             throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
         }
@@ -221,7 +228,7 @@ function renderCard(obj) {
             This lead is unverified. Information is potentially incorrect. Use at your own risk.
         </span>`;
     let badge = `<span class="badge bg-${status} mt-2"
-        style="padding: 1em 1em; height: fit-content; font-weight: 500; width: fit-content;">
+        style="padding: 1em 1em; height: fit-content; font-weight: 500; width: auto;">
         ${badgeNotice}
     </span>`;
     elements += badge + warning;
@@ -264,12 +271,14 @@ function renderStateResourceButtons() {
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
+    let isinValid = (item) => !Boolean(item) || item === "retry"
     list.sort(function(a, b) {
-        if (a.Verified && !b.Verified) {
+        console.log(a, b);
+        if (!isinValid(a.Verified) && isinValid(b.Verified)) {
             console.log(270)
             return -1;
         }
-        if (b.Verified && !a.Verified) {
+        if (isinValid(a.Verified) && !isinValid(b.Verified)) {
             console.log(274)
             return 1;
         }
@@ -348,9 +357,8 @@ function init() {
     } else {
         function onGetMasterSuccess(data) {
             if (data.status === "OK") {
-                let rehydratedData = data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n");
                 let stateDict = {} // mapping of states to links. the return value of your dropdown can be used to index this
-                let states = parseTsv(rehydratedData);
+                let states = Papa.parse(data.text, PAPA_OPTIONS).data;
                 for (let state of states) {
                     stateDict[state.Place] = state.Link;
                 }
