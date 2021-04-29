@@ -151,7 +151,7 @@ function renderButtons(resources) {
     div.classList.add("d-flex", "flex-wrap");
     div.textContent = "";
 
-    resources.forEach(resource => {
+    resources.sort((x, y) => y.length - x.length).forEach(resource => {
         let button = createElementWithClass(
             "button",
             "btn btn-primary",
