@@ -4,6 +4,7 @@
 
 .card {
     border-radius: .5em !important;
+    margin: 10px;
 }
 
 .btn-check:focus+.btn,
@@ -19,6 +20,10 @@
 .container {
     border-radius: 6px;
     max-width: 65%;
+}
+
+.svg {
+    margin-right: 15px;
 }
 
 .resource-btn {

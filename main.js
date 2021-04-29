@@ -202,46 +202,230 @@ function toggleElementDisplay(selector) {
     }
 }
 
+let cardCount = 0;
+
 function renderCard(obj) {
-    if (obj.Verified === "no") {
+    console.log(obj);
+    let container = document.getElementById("information");
+
+    let company = '', companyEle = '', companyList = ['Company', 'Entity', 'Company Name', 'Contact Name'];
+    let p_name = '', nameEle = '', nameList = ['Name', 'Contact Person Name'];
+    let number= '', numberEle = '', numberList = ['Number', 'Contact Number', 'Phone', ''];
+    let area = '', areaEle = '', areaList = ['Area', 'City', 'Zone'];
+    let comment = '', commentEle = '', commentList = ['Status', 'Comment', 'Remarks', 'Comment.'];
+
+    for(let key in obj) {
+        if (key === "Verified") continue;
+        if (!Boolean(key) || !Boolean(obj[key])) continue;
+        console.log(key + "=" + obj[key]);
+
+        if(companyList.includes(key)) 
+            company = company + obj[key] + ' ';
+        else if(nameList.includes(key)) 
+            p_name = p_name + obj[key] + ' ';
+        else if(numberList.includes(key)) 
+            number = number + obj[key] + ', ';
+        else if(areaList.includes(key)) {
+            area = area + obj[key];
+            // alert(key + " = " + area);
+        }
+        else if(commentList.includes(key)) 
+            comment = comment + obj[key] + '. ';
+
+        if(company != '') 
+            companyEle = `<h5 class="fs-5 text-wrap">${company}</h5>`;
+        
+        if(p_name != '') {
+            nameEle =
+                `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                    <i class="fas fa-user svg"></i>
+                    ${p_name}
+                </h6>`;
+            console.log(p_name, nameEle)
+        }
+        
+        if(number != '') {
+            numberEle = 
+            `
+                <h6 class="fs-6 text-wrap d-flex align-items-center">
+                    <i class="fas fa-phone-alt svg"></i>
+                    ${number}
+                </h6>
+            `;
+        }
+        
+        if(area != '') {
+            // alert(area);
+            areaEle =
+            `
+            <h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-map-marker-alt svg"></i>
+                ${area}
+             </h6>
+            `;
+        }
+
+        if(comment != '') {
+            commentEle =
+            `
+            <button class="btn d-flex align-items-center" style="padding: 0;" type="button" data-bs-toggle="collapse" data-bs-target="#card${cardCount}" aria-expanded="false" aria-controls="collapseExample">
+                <i class="fas fa-plus svg"></i>
+                More Info
+            </button>
+            </p>
+            <div class="collapse" id="card${cardCount}">
+                <div class="container-fluid px-0">
+                    <h6>Comments: ${comment}</h6>
+                </div>
+            </div>
+            `;
+        }
+
+
+    }
+
+    let status = obj.Verified === "yes" ? "success" : "warning";
+    console.log(company + p_name + number + area + comment);
+    console.log(companyEle);
+    console.log(numberEle);
+    console.log(nameEle);
+    console.log(areaEle);
+
+    /*if (obj.Verified === "no") {
         return;
     }
     let container = document.getElementById("information");
     let elements = ``;
 
     for (let key in obj) {
+        // console.log(key, obj[key]) //Column name
         if (key === "Verified") continue;
-        if (!Boolean(key) || !Boolean(obj[key])) continue;
-        let elt = `
-        <div>
-            <div class='d-inline fs-5' style='font-weight: 500'>${capitaliseFirstLetter(key)}: </div>
-            <div class='d-inline fs-5' style='font-weight: 400'>${obj[key]}</div>
-        </div>`;
-        elements += elt;
-    }
+        if (!Boolean(key) || !Boolean(obj[key])) {
+            console.log(key, obj[key]);
+            continue;
+        }
+        // console.log(key, obj[key]);
+        // let elt = `
+        // <div>
+        //     <div class='d-inline fs-5' style='font-weight: 500'>${capitaliseFirstLetter(key)}: </div>
+        //     <div class='d-inline fs-5' style='font-weight: 400'>${obj[key]}</div>
+        // </div>`;
+        // elements += elt;
 
-    let status = obj.Verified === "yes" ? "success" : "warning";
-    let badgeNotice = obj.Verified === "yes" ? "Verified" : "Unverified";
-    let warning = obj.Verified === "yes" ? "" :
-        `<span class='alert alert-warning' style='font-size: 10px'>
-            This lead is unverified. Information is potentially incorrect. Use at your own risk.
-        </span>`;
-    let badge = `<span class="badge bg-${status} mt-2"
-        style="padding: 1em 1em; height: fit-content; font-weight: 500; width: auto;">
-        ${badgeNotice}
-    </span>`;
-    elements += badge + warning;
+        if(companyList.includes(key)) 
+            company = company += obj[key];
+        if(nameList.includes(key)) 
+            p_name = p_name += obj[key];
+        if(numberList.includes(key)) 
+            number = number += obj[key];
+        if(areaList.includes(key))
+            area = area += obj[key];
+        if(commentList.includes(key)) 
+            comment = comment += obj[key];
+        }
 
-    let card_markup = `
-        <div class="card-body pb-2">
-            <div class="d-flex flex-column align-items-left">
-                ${elements}
+
+        let status = obj.Verified === "yes" ? "success" : "warning";
+
+        if(company!='') 
+            companyEle = `<h5 class="fs-5 text-wrap">${company}</h5>`;
+
+        nameELe =
+            `
+            <h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-user svg"></i>
+                 ${p_name}
+            </h6>
+            `;
+          
+
+        if(number!='') {
+            numberEle = 
+            `
+            <h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-phone-alt svg"></i>
+                ${number}
+                <a href='https://wa.me/${number}' class="rounded-pill btn btn-success" style="width: fit-content; font-size: 12px; margin-left: 15px; transform: scale(0.75);">
+                    Whatsapp
+                </a>
+            </h6>
+            `;
+        }
+
+        if(area!='') {
+            nameELe =
+            `
+            <h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-map-marker-alt svg"></i>
+                ${area}
+             </h6>
+            `;
+        }
+
+        if(comment!='') {
+            commentEle =
+            `
+            <button class="btn d-flex align-items-center" style="padding: 0;" type="button" data-bs-toggle="collapse" data-bs-target="#card${cardCount}" aria-expanded="false" aria-controls="collapseExample">
+                <i class="fas fa-plus svg"></i>
+                More Info
+            </button>
+            </p>
+            <div class="collapse" id="card${cardCount}">
+                <div class="container-fluid px-0">
+                    <h6>Comments: ${comment}</h6>
+                </div>
             </div>
-        </div>`;
-    let card = createElementWithClass("div", "card mt-4");
-    card.innerHTML = card_markup;
-    container.appendChild(card);
+            `;
+        
+
+        console.log(company + p_name + number + area + comment)*/
+        
+        
+        let cardGen =
+        `
+        <div class="col-lg-6 col-12 p-lg-2 px-0 py-1">
+            <div class="card mt-4 alert-${status}">
+                <div class="card-body pb-2">
+                    <div class="d-flex flex-sm-row flex-column justify-content-between">
+                        <div>`
+                            + companyEle + nameEle + numberEle + areaEle + commentEle +
+                        `</div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    Verified 24mins ago
+                </div>
+            </div>
+        </div>
+        `;
+
+    // console.log(cardGen);
+    if(obj.Verified!='no')
+        container.innerHTML += cardGen;
 }
+
+    // let status = obj.Verified === "yes" ? "success" : "warning";
+    // let badgeNotice = obj.Verified === "yes" ? "Verified" : "Unverified";
+    // let warning = obj.Verified === "yes" ? "" :
+    //     `<span class='alert alert-warning' style='font-size: 10px'>
+    //         This lead is unverified. Information is potentially incorrect. Use at your own risk.
+    //     </span>`;
+    // let badge = `<span class="badge bg-${status} mt-2"
+    //     style="padding: 1em 1em; height: fit-content; font-weight: 500; width: auto;">
+    //     ${badgeNotice}
+    // </span>`;
+    // elements += badge + warning;
+
+    // let card_markup = `
+    //     <div class="card-body pb-2">
+    //         <div class="d-flex flex-column align-items-left">
+    //             ${elements}
+    //         </div>
+    //     </div>`;
+    // let card = createElementWithClass("div", "card mt-4");
+    // card.innerHTML = card_markup;
+    // container.appendChild(card);
+//}
 
 function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
@@ -273,11 +457,11 @@ function renderStateResourceData(list, stateName, resName) {
     let isInvalid = (item) => !Boolean(item) || item === "retry"
     list.sort(function(a, b) {
         if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
-            console.log(270)
+            // console.log(270)
             return -1;
         }
         if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
-            console.log(274)
+            // console.log(274)
             return 1;
         }
         return 0;
@@ -286,9 +470,27 @@ function renderStateResourceData(list, stateName, resName) {
     let header = document.querySelector("label[for='information']");
     header.innerHTML = `Resource list: ${resName} in ${stateName}`;
     container.innerHTML = "";
-    for (let x of list) {
-        renderCard(x);
+    console.log(list);
+
+    //Display only 10 enteries first
+    for(let i=0; i<10; i++) {
+        renderCard(list[i]);
+        cardCount ++;
+        // console.log(cardCount);
     }
+    // for (let x of list) {
+    //     renderCard(x);
+    // }
+}
+
+//Function to render more data, will fix this tomorrow -_-
+function renderMore() {
+    for(let i=cardCount; i<cardCount+10; i++) {
+        renderCard(list[i]); //List undefined because of no reference
+        cardCount ++;
+        // console.log(cardCount);
+    }
+    
 }
 
 
