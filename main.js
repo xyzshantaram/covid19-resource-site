@@ -54,8 +54,8 @@ function getStateIndex(stateName) {
                 let rehydratedData = parseTsv(data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n"));
 
                 stateResourceList = rehydratedData.map(
-                    categoryItems => categoryItems["Category"]  // Move the array up from the nested category field
-                ).filter(word => word.trim().length > 0)        // Check if the resource is not empty space
+                    categoryItems => categoryItems["Category"] // Move the array up from the nested category field
+                ).filter(word => word.trim().length > 0) // Check if the resource is not empty space
 
                 App.data.stateIndices[stateName] = stateResourceList;
                 cacheTimeStampedData(`${stateName}-index`, stateResourceList);
@@ -146,6 +146,7 @@ function createElementWithClass(type, class_name, text, style) {
 }
 
 function renderButtons(resources) {
+    setElementStyleProp(elem, "display", "block");
     let div = document.getElementById("resources");
     div.classList.add("d-flex", "flex-wrap");
     div.textContent = "";
@@ -158,6 +159,20 @@ function renderButtons(resources) {
         );
         div.appendChild(button);
     });
+}
+
+function setElementStyleProp(elem, property, value) {
+    if (elem) {
+        elem.style[property] = value;
+    }
+}
+
+function toggleElementDisplay(selector) {
+    let elem = document.querySelector(selector);
+    if (elem) {
+        let d = elem.style.display;
+        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
+    }
 }
 
 function renderCard(obj) {
@@ -218,7 +233,7 @@ function renderStateResources() {
 
 function setModalContent(content) {
     // Sets the content of the reusable modal
-    document.getElementById("reusable-modal-content").textContent = content
+    document.getElementById("reusable-modal-content").textContent = content;
 }
 
 function normaliseResourceData() {
@@ -246,7 +261,11 @@ function beginUI() {
 
 function init() {
     // Create a loading modal
-    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), { backdrop: "static", focus: true, keyboard: true });
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
+        backdrop: "static",
+        focus: true,
+        keyboard: true
+    });
     setModalContent("Loading...")
     // Toggle the modal
     Modal.toggle();
