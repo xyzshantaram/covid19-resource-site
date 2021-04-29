@@ -10,6 +10,8 @@ const App = {
     }
 }
 
+let Modal = undefined
+
 function getSheetID(url) {
     return url.split("/")[5];
 }
@@ -217,6 +219,11 @@ function renderStateResources() {
     }
 }
 
+function setModalContent(content) {
+    // Sets the content of the reusable modal
+    document.getElementById("reusable-modal-content").textContent = content
+}
+
 function normaliseResourceData() {
 
 }
@@ -236,11 +243,17 @@ function beginUI() {
     }
 
     // Rendering code on success
-
+    Modal.toggle(); // Loading is done, disable modal
     populateStateDropdown();
 }
 
 function init() {
+    // Create a loading modal
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), { backdrop: "static", focus: true, keyboard: true });
+    setModalContent("Loading...")
+    // Toggle the modal
+    Modal.toggle();
+
     if (!String.prototype.replaceAll) { // polyfill replaceAll
         String.prototype.replaceAll = function (arg1, arg2) {
             let toRet = this;
