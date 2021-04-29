@@ -21,6 +21,20 @@
     max-width: 65%;
 }
 
+.resource-btn {
+    font-size: 0.85em;
+    padding: 0.25em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    margin: 0.1em;
+    filter: saturate(0.65);
+}
+
+.essentialButton {
+    background-color: red !important;
+    border-color: red !important;
+}
+
 @media screen and (max-width: 500px) {
     .container {
         max-width: 90%;
