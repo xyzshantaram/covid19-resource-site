@@ -10,6 +10,8 @@ const App = {
     }
 }
 
+let Modal = undefined
+
 function getSheetID(url) {
     return url.split("/")[5];
 }
@@ -50,9 +52,11 @@ function getStateIndex(stateName) {
         function onGetIndexSuccess(data) {
             if (data.status === "OK") {
                 let rehydratedData = parseTsv(data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n"));
-                for (let item of rehydratedData) {
-                    if (item) stateResourceList.push(item["Category"]);
-                }
+
+                stateResourceList = rehydratedData.map(
+                    categoryItems => categoryItems["Category"]  // Move the array up from the nested category field
+                ).filter(word => word.trim().length > 0)        // Check if the resource is not empty space
+
                 App.data.stateIndices[stateName] = stateResourceList;
                 cacheTimeStampedData(`${stateName}-index`, stateResourceList);
                 App.loadedStateIndicesCount += 1;
@@ -212,6 +216,11 @@ function renderStateResources() {
     }
 }
 
+function setModalContent(content) {
+    // Sets the content of the reusable modal
+    document.getElementById("reusable-modal-content").textContent = content
+}
+
 function normaliseResourceData() {
 
 }
@@ -231,11 +240,17 @@ function beginUI() {
     }
 
     // Rendering code on success
-
+    Modal.toggle(); // Loading is done, disable modal
     populateStateDropdown();
 }
 
 function init() {
+    // Create a loading modal
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), { backdrop: "static", focus: true, keyboard: true });
+    setModalContent("Loading...")
+    // Toggle the modal
+    Modal.toggle();
+
     if (!String.prototype.replaceAll) { // polyfill replaceAll
         String.prototype.replaceAll = function(arg1, arg2) {
             let toRet = this;

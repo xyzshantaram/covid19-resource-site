@@ -23,7 +23,8 @@
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;500;700;800&display=swap"
+        rel="stylesheet">
 
     <style>
         * {
@@ -59,6 +60,17 @@
 <body>
     <script src='utils.js'></script>
     <script src='main.js'></script>
+    <div id="reusable-modal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="container-fluid d-flex align-items-center">
+                    <img src="assets/Spinner-1s-200px.svg" width="20%">
+                    <div id="reusable-modal-content" class="modal-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <nav class="navbar navbar-dark bg-dark mb-3">
         <div class="container-fluid d-flex align-items-center p-3">
             <a class="navbar-brand">COVID RESOURCES INDIA</a>
