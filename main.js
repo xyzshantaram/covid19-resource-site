@@ -52,9 +52,11 @@ function getStateIndex(stateName) {
         function onGetIndexSuccess(data) {
             if (data.status === "OK") {
                 let rehydratedData = parseTsv(data.text.replaceAll("\\t", "\t").replaceAll("\\r\\n", "\n"));
-                for (let item of rehydratedData) {
-                    if (item) stateResourceList.push(item["Category"]);
-                }
+
+                stateResourceList = rehydratedData.map(
+                    categoryItems => categoryItems["Category"]  // Move the array up from the nested category field
+                ).filter(word => word.trim().length > 0)        // Check if the resource is not empty space
+
                 App.data.stateIndices[stateName] = stateResourceList;
                 cacheTimeStampedData(`${stateName}-index`, App.data[`${stateName}-index`]);
                 App.loadedStateIndicesCount += 1;
