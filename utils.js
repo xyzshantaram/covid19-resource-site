@@ -18,11 +18,12 @@ function parseTsv(str) {
     return tsv_data;
 }
 
-function cacheTimeStampedData(name, obj) {
+function cacheTimeStampedData(name, obj, timeout) {
     let objTimeWrapper = {
         time: new Date(),
         data: JSON.stringify(obj)
     }
+    if (timeout) objTimeWrapper.timeout = timeout;
     localStorage.setItem(name, JSON.stringify(objTimeWrapper));
 }
 
@@ -35,6 +36,7 @@ function retrieveCachedIfExists(name) {
         console.error("Wrapper parsing error: ", e);
     }
 
+    const DATA_EXPIRY_TIMEOUT = parsedWrapper.timeout || 18e5;
     if (parsedWrapper && new Date() - parsedWrapper.time > DATA_EXPIRY_TIMEOUT) { // if the data is too old, clear it and return null
         localStorage.removeItem(name);
         parsedWrapper = null;

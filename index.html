@@ -20,45 +20,6 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;500;700;800&display=swap" rel="stylesheet">
-
-    <style>
-        * {
-            font-family: Roboto Slab;
-        }
-
-        .card {
-            border-radius: .5em !important;
-        }
-
-        .btn-check:focus+.btn,
-        .btn:focus {
-            outline: 0;
-            box-shadow: none;
-        }
-
-        .head {
-            background: #EFEFEF;
-        }
-
-        .container {
-            border-radius: 6px;
-            max-width: 65%;
-        }
-
-        @media screen and (max-width: 500px) {
-            .container {
-                max-width: 90%;
-            }
-        }
-
-        #resource-group {
-            display: none;
-        }
-
-        #cities-group {
-            display: none;
-        }
-    </style>
 </head>
 
 <body>
@@ -97,7 +58,7 @@
                             <!-- For States -->
                             <div class="form-group mb-3" id='state-group'>
                                 <label for="states-dropdown" class="mb-2">Select State: </label>
-                                <select id="states-dropdown" class="form-select" aria-label="Select a state" onchange="renderStateResources()">
+                                <select id="states-dropdown" class="form-select" aria-label="Select a state">
                                     <option selected>---</option>
                                 </select>
                             </div>

@@ -1,5 +1,3 @@
-const DATA_EXPIRY_TIMEOUT = 18e5; // magic number for 30 minutes
-
 const App = {
     statesLoaded: false,
     loadedStateIndicesCount: 0,
@@ -169,7 +167,7 @@ function renderButtons(resources) {
             loadStateResource(selectedState, resource, onResLoadSuccess);
 
             function onResLoadSuccess(data) {
-                renderCard(normaliseResourceData(data));
+                renderStateResourceData(data);
                 Modal.hide();
             }
         }
@@ -200,32 +198,6 @@ function toggleElementDisplay(selector) {
 
 function renderCard(obj) {
     console.log(obj);
-    /*
-        let container = document.getElementById("information");
-        let card_markup = `
-        <div class="card-body pb-2">
-            <div class="d-flex flex-sm-row flex-column justify-content-between">
-                <div>
-                    <h5 class="fs-5 text-wrap">${obj.name}</h5>
-                    <h6 class="fs-6 text-wrap d-flex align-items-center">
-                        <i class="fas fa-user" style="margin-right: 5px;"></i>${obj.individual}
-                    </h6>
-                    <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
-                        <i class="fas fa-phone" style="margin-right: 5px;"></i>${obj.phone}
-                    </h6>
-
-                    <h6 class="fs-6 text-wrap text-success d-flex align-items-center">
-                        <i class="far fa-compass" style="margin-right: 5px;"></i>${obj.location}
-                    </h6>
-                </div>
-                <span class="badge bg-success"
-                    style="padding: 1em 1em; height: fit-content; font-weight: 500; width: fit-content;">Verified</span>
-            </div>
-        </div>`;
-        let card = createElementWithClass("div", "card mt-4");
-        card.innerHTML = card_markup;
-        container.appendChild(card);
-    */
 }
 
 function populateStateDropdown() {
@@ -243,7 +215,7 @@ function populateStateDropdown() {
     })
 }
 
-function renderStateResources() {
+function renderStateResourceButtons() {
     // Renders relevant buttons and cards when a state is selected from the states dropdown
     let dropdownValue = document.getElementById("states-dropdown").value;
     if (dropdownValue != "---") {
@@ -253,6 +225,14 @@ function renderStateResources() {
         setElementStyleProp(document.querySelector("#resource-group"), "display", "none");
     }
 }
+
+function renderStateResourceData(list) {
+    // renders cards
+    for (let x of list) {
+
+    }
+}
+
 
 function setModalContent(content) {
     // Sets the content of the reusable modal
@@ -264,11 +244,6 @@ function SetModalSpinnerDisplay(state) {
     if (state) propString = "block";
     let spinner = document.querySelector('#loading-spinner');
     setElementStyleProp(spinner, display, propString);
-}
-
-function normaliseResourceData(obj) {
-    let ret = obj; // placeholder, populate ret with normalized values/keys
-    return ret;
 }
 
 function beginUI() {
@@ -300,6 +275,8 @@ function init() {
     setModalContent("Loading...")
     // Toggle the modal
     Modal.toggle();
+
+    document.querySelector("#states-dropdown").onchange = renderStateResourceButtons;
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
         String.prototype.replaceAll = function(arg1, arg2) {
