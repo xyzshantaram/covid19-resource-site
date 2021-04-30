@@ -281,7 +281,6 @@ function renderCard(obj) {
         }
 
         if (!Object.keys(normalised).includes(key)) {
-            console.log(key)
             final.push(createRow(key, obj[key]));
         } else {
             final.push(createRow(normalised[key],
@@ -290,7 +289,6 @@ function renderCard(obj) {
         }
     }
     if (final.length == 0) {
-        console.log('final empty', obj)
         return;
     }
     final.sort((b, a) => {
@@ -298,7 +296,6 @@ function renderCard(obj) {
         if (b.icon && !a.icon) return -1;
         return 0;
     })
-    console.log(final)
     final = final.map((itm) => itm.str);
     let status = obj.Verified === "yes" ? "success" : "warning";
 
@@ -382,18 +379,18 @@ function renderStateResourceData(list, stateName, resName) {
 
 function showLoadingDialog() {
     let spinner = `<img src="assets/Spinner-1s-200px.svg" width="20%" id='loading-spinner'>`;
-    setModalContent("Loading...", spinner, false);
+    setModalContent("Loading...", spinner, null, false);
     Modal.show();
 }
 
 
 function showInfoDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4"></i>`, true);
+    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4"></i>`, "Information", true);
     Modal.show();
 }
 
 function showErrorDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4"></i>`, false);
+    setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4"></i>`, "Error", false);
     Modal.show();
 }
 
@@ -402,10 +399,19 @@ function hideDialog() {
     Modal.hide();
 }
 
-function setModalContent(content, eltString, isDismissable) {
+function setModalContent(content, eltString, header, isDismissable) {
     // Sets the content of the reusable modal
-    document.getElementById("modal-content-wrapper").innerHTML =
-        `<div class="container-fluid d-flex align-items-center">
+    document.getElementById("modal-content-wrapper").innerHTML = `
+    ${(function() {
+        if (header) {
+            return `
+            <div class='modal-header' id='modal-header'>
+                ${header}
+            </div>`
+        }
+        return "";
+    })()}
+    <div class="container-fluid d-flex align-items-center flex-column">
         ${eltString}
         <div id="reusable-modal-content" class="modal-body">
         ${content}
@@ -444,11 +450,49 @@ function beginUI() {
 
     // Rendering code on success
     hideDialog();
+    infoButtonHandler();
     populateStateDropdown();
+}
+
+function infoButtonHandler() {
+    showInfoDialog(`
+        <div>Welcome to covid.resources.india's official website.</div>
+        <div>
+        How to use:
+        <ol>
+        <li>Select a state using the dropdown box.</li>
+        <li>Click one of the resource buttons to view leads for that resource in that state.</li>
+        <li>Verified resources have a green badge at the bottom, and have been verified by our volunteers.</li>
+        <li>Unverified resources have not been verified yet, but still have a chance of working.</li>
+        </ol>
+        </div>
+        <div>Check out our:
+            <ul>
+            <li><a href='https://instagram.com/covid.resources.india'>Instagram page</a></li>
+            <li><a href='#'>Twitter page</a></li></li>
+            </ul>
+        </div>
+        <div>
+            <a href='https://github.com/shantaram3013/covid19-resource-site/issues'>Report bugs</a>
+            to <a href='https://github.com/shantaram3013/covid19-resource-site'>GitHub.</a>
+        </div>
+        <div> This site and the data it displays is collected and maintained by volunteers.
+            <a href='https://www.instagram.com/covid.resources.india/'>
+            Click here for information on volunteering.
+            </a>
+        </div>
+        <div>
+        Made with <i class="fas fa-heart"></i> by <a href='https://github.com/dakshsethi'>Daksh Sethi</a>,
+        <a href='https://github.com/kinshukdua'>Kinshuk Dua</a>,
+        <a href='https://github.com/Krishna-Sivakumar'>Krishna Sivakumar</a>,
+        and <a href='https://github.com/shantaram3013'>Siddharth Singh</a>
+        </div>
+    `)
 }
 
 function init() {
     let resTitle = document.querySelector("label[for='information']");
+    document.querySelector('#info-button').addEventListener('click', infoButtonHandler);
     setElementStyleProp(resTitle, "display", "none");
     // Create a loading modal
     Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {

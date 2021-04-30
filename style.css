@@ -53,3 +53,7 @@
 #cities-group {
     display: none;
 }
+
+.modal-dialog {
+    max-width: 90vw;
+}
