@@ -104,7 +104,7 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
             waits += 1;
         } else {
             if (onLoadSuccess) {
-                let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
+                let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
                 value.sort(function(a, b) {
                     if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
                         return 1;
