@@ -5,7 +5,8 @@ const App = {
         stateLinks: {},
         stateIndices: {},
         stateResources: {}
-    }
+    },
+    pollerDelay: 200
 }
 
 const PAPA_OPTIONS = {
@@ -74,9 +75,10 @@ function getStateIndex(stateName) {
 
 function loadStateResource(stateName, resName, onLoadSuccess) {
     let value = null;
+    let waits = 0;
 
     if (App.data.stateResources[stateName][resName]) {
-        return;
+        value = App.data.stateResources[stateName][resName];
     }
 
     if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
@@ -97,9 +99,25 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
 
     function resourceLoadPoller() {
         if (!value) {
-            setTimeout(resourceLoadPoller, 100);
+            if (waits > 100) {
+                throw new Error(`Loading sheet for ${stateName} failed: Timed out.`);
+            }
+            setTimeout(resourceLoadPoller, App.pollerDelay);
+            waits += 1;
         } else {
-            if (onLoadSuccess) onLoadSuccess(value);
+            if (onLoadSuccess) {
+                let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
+                value.sort(function(a, b) {
+                    if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
+                        return 1;
+                    }
+                    if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
+                        return -1;
+                    }
+                    return 0;
+                });
+                onLoadSuccess(value);
+            }
         }
     }
 
@@ -109,11 +127,10 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
         } else {
             throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
         }
-
-        setTimeout(resourceLoadPoller, 100);
     }
 
     getFileFromURL(App.data.stateLinks[stateName], resName, onGetResourceSuccess);
+    setTimeout(resourceLoadPoller, App.pollerDelay);
 }
 
 function loadStates(next) {
@@ -138,11 +155,11 @@ function loadStates(next) {
         if (getLoadedIndicesCount() === states.length || count > 100) {
             next();
         } else {
-            setTimeout(indicesLoadPoller, 100, count);
+            setTimeout(indicesLoadPoller, App.pollerDelay, count);
         }
     }
 
-    setTimeout(indicesLoadPoller, 100, 0);
+    setTimeout(indicesLoadPoller, App.pollerDelay, 0);
 }
 
 function createElementWithClass(type, class_name, text, style) {
@@ -166,14 +183,14 @@ function renderButtons(resources) {
             resource
         );
 
-        button.onclick = function () {
+        button.onclick = function() {
             let selectedState = document.getElementById("states-dropdown").value;
             if (selectedState === "---") return;
-            Modal.show();
+            showLoadingDialog();
 
             function onResLoadSuccess(data) {
                 renderStateResourceData(data, selectedState, resource);
-                Modal.hide();
+                hideDialog();
             }
 
             loadStateResource(selectedState, resource, onResLoadSuccess);
@@ -199,119 +216,124 @@ function toggleElementDisplay(selector) {
     let elem = document.querySelector(selector);
     if (elem) {
         let d = elem.style.display;
-        (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
+        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
     }
 }
 
 let cardCount = 0;
 
 function renderCard(obj) {
-    console.log(obj);
+    if (obj.Verified && obj.Verified.toLocaleLowerCase() === "no") return;
     let container = document.getElementById("information");
 
-    let company = '', companyEle = '', companyList = ['Company', 'Entity', 'Company Name', 'Contact Name'];
-    let p_name = '', nameEle = '', nameList = ['Name', 'Contact Person Name'];
-    let number = '', numberEle = '', numberList = ['Number', 'Contact Number', 'Phone', ''];
-    let area = '', areaEle = '', areaList = ['Area', 'City', 'Zone'];
-    let comment = '', commentEle = '', commentList = ['Status', 'Comment', 'Remarks', 'Comment.'];
+    let normaliser = {
+        entity: {
+            elem: '',
+            list: ['name', 'contact person name', 'company', 'entity', 'company name', 'contact name'],
+            icon: '<i class="fas fa-user-friends"></i>',
+            class: `fs-5 text-wrap d-inline`
+        },
+        phone: {
+            elem: '',
+            list: ['number', 'contact number', 'phone'],
+            icon: '<i class="fas fa-phone"></i>',
+        },
+        place: {
+            elem: '',
+            list: ['area', 'city', 'zone'],
+            icon: '<i class="fas fa-map-marker-alt"></i>',
+        },
+        comment: {
+            elem: '',
+            list: ['status', 'comment', 'remarks'],
+            icon: '<i class="fas fa-comment"></i>',
+        },
+    }
+
+    let final = [];
+    let normalised = {};
 
     for (let key in obj) {
         if (key === "Verified") continue;
         if (!Boolean(key) || !Boolean(obj[key])) continue;
-        console.log(key + "=" + obj[key]);
+        if (!Boolean(key.trim()) || !Boolean(obj[key].trim())) continue;
 
-        if (companyList.includes(key))
-            company = company + obj[key] + ' ';
-        else if (nameList.includes(key))
-            p_name = p_name + obj[key] + ' ';
-        else if (numberList.includes(key))
-            number = number + obj[key] + ', ';
-        else if (areaList.includes(key))
-            area = area + obj[key];
-        else if (commentList.includes(key))
-            comment = comment + obj[key] + '. ';
-
-        if (company != '')
-            companyEle = `<h5 class="fs-5 text-wrap">${company}</h5>`;
-
-        if (p_name != '') {
-            nameEle =
-                `<h6 class="fs-6 text-wrap d-flex align-items-center">
-                    <i class="fas fa-user svg"></i>
-                    ${p_name}
-            </h6>`;
-            // console.log(p_name, nameEle)
+        for (let category in normaliser) {
+            if (normaliser[category].list.includes(key.toLowerCase())) {
+                normaliser[category].value = obj[key];
+                normalised[key] = category;
+            }
         }
 
-        if (number != '') {
-            numberEle =
-                `<h6 class="fs-6 text-wrap d-flex align-items-center">
-                    <i class="fas fa-phone-alt svg"></i>
-                    ${number}
-            </h6>`;
+        function createRow(k, v, icon, textClass) {
+            function getClass() {
+                if (textClass) return textClass;
+                return "fs-6 text-wrap d-inline";
+            }
+            return {
+                k: k,
+                v: v,
+                icon: Boolean(icon),
+                str: `<div style='width: 100%; text-align: left;' class='m-1'>
+                <div class="${getClass()}" style='font-weight: 500'> ${icon ? icon : k} </div>
+            <div class="${getClass()}" style='font-weight: 400'> ${v} </div> </div>`
+            }
         }
 
-        if (area != '') {
-            // alert(area);
-            areaEle =
-                `<h6 class="fs-6 text-wrap d-flex align-items-center">
-                <i class="fas fa-map-marker-alt svg"></i>
-                ${area}
-             </h6>`;
-        }
-
-        if (comment != '') {
-            commentEle =
-                `<h6 class="fs-6 text-wrap d-flex align-items-center">
-                <i class="fas fa-comment svg"></i>
-                ${comment}
-             </h6>`;
+        if (!Object.keys(normalised).includes(key)) {
+            console.log(key)
+            final.push(createRow(key, obj[key]));
+        } else {
+            final.push(createRow(normalised[key],
+                obj[key], normaliser[normalised[key]].icon,
+                normaliser[normalised[key]].class));
         }
     }
-
+    if (final.length == 0) {
+        console.log('final empty', obj)
+        return;
+    }
+    final.sort((b, a) => {
+        if (a.icon && !b.icon) return 1;
+        if (b.icon && !a.icon) return -1;
+        return 0;
+    })
+    console.log(final)
+    final = final.map((itm) => itm.str);
     let status = obj.Verified === "yes" ? "success" : "warning";
-    let statusEleHead = '';
-    let statusEleFoot = '';
+
+    let statusElements = {
+        header: "",
+        footer: ""
+    }
     if (status == 'success') {
-        statusEleFoot =
-            `<div class="card-footer text-center">
+        statusElements.footer =
+            `<div class="card-footer text-center rounded-bottom bg-${status} text-light">
             Verified
         </div>`;
-        statusEleHead = '';
     } else {
-        statusEleHead =
-            `<div class="card-header text-center">
+        statusElements.header =
+            `<div class="card-header text-center rounded-top bg-${status} text-white">
             This lead is unverified. Information potentially incorrect; use at your own risk!
         </div>`;
-        statusEleFoot = '';
     }
-    console.log(company + p_name + number + area + comment);
-    console.log(companyEle);
-    console.log(numberEle);
-    console.log(nameEle);
-    console.log(areaEle);
-
 
     let cardGen =
         `
         <div class="col-lg-6 col-12 p-lg-2 px-0 py-1">
-            <div class="card mt-4 alert-${status}">
-                ${statusEleHead}
+            <div class="card h-100 ml-2 mt-4 alert-${status}">
+                ${statusElements.header}
                 <div class="card-body pb-2">
-                    <div class="d-flex flex-sm-row flex-column justify-content-between">
-                        <div>`
-        + companyEle + nameEle + numberEle + areaEle + commentEle +
-        `</div>
+                    <div class="d-flex flex-column">
+                        ${final.join("\n")}
                     </div>
                 </div>
-                ${statusEleFoot}
+                ${statusElements.footer}
             </div>
         </div>
         `;
-
-    // console.log(cardGen);
-    if (obj.Verified != 'no')
-        container.innerHTML += cardGen;
+    console.log
+    container.innerHTML += cardGen;
 }
 
 function populateStateDropdown() {
@@ -345,19 +367,6 @@ function onStateDropdownChange() {
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
-    let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
-    list.sort(function (a, b) {
-        if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
-            return -1;
-        }
-        if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
-            return -1;
-        }
-        if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
-            return 1;
-        }
-        return 0;
-    });
     let container = document.getElementById("information");
     let title = document.querySelector("label[for='information']");
     setElementStyleProp(title, "display", "block");
@@ -365,14 +374,52 @@ function renderStateResourceData(list, stateName, resName) {
     container.innerHTML = "";
     console.log(list);
 
-    list.forEach(item => { renderCard(item) })
+    list.forEach(item => {
+        renderCard(item)
+    })
     cardCount = list.length
 }
 
+function showLoadingDialog() {
+    let spinner = `<img src="assets/Spinner-1s-200px.svg" width="20%" id='loading-spinner'>`;
+    setModalContent("Loading...", spinner, false);
+    Modal.show();
+}
 
-function setModalContent(content) {
+
+function showInfoDialog(msg) {
+    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4"></i>`, true);
+    Modal.show();
+}
+
+function showErrorDialog(msg) {
+    setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4"></i>`, false);
+    Modal.show();
+}
+
+function hideDialog() {
+    setModalContent("", "");
+    Modal.hide();
+}
+
+function setModalContent(content, eltString, isDismissable) {
     // Sets the content of the reusable modal
-    document.getElementById("reusable-modal-content").textContent = content;
+    document.getElementById("modal-content-wrapper").innerHTML =
+        `<div class="container-fluid d-flex align-items-center">
+        ${eltString}
+        <div id="reusable-modal-content" class="modal-body">
+        ${content}
+        </div>
+    </div>
+    ${(function() {
+        if (isDismissable) {
+            return `
+            <div class='modal-footer' id='modal-footer'>
+                <button type="button" class="btn btn-secondary" onclick="hideDialog()">Close</button>
+            </div>`
+        }
+        return "";
+    })()}`;
 }
 
 function SetModalSpinnerDisplay(state) {
@@ -384,7 +431,6 @@ function SetModalSpinnerDisplay(state) {
 
 function beginUI() {
     // Entry point for rendering
-
     if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
         // Error Handling
 
@@ -397,7 +443,7 @@ function beginUI() {
     }
 
     // Rendering code on success
-    Modal.hide(); // Loading is done, disable modal
+    hideDialog();
     populateStateDropdown();
 }
 
@@ -410,14 +456,12 @@ function init() {
         focus: true,
         keyboard: true
     });
-    setModalContent("Loading...")
-    // Toggle the modal
-    Modal.toggle();
+    showLoadingDialog();
 
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function (arg1, arg2) {
+        String.prototype.replaceAll = function(arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
@@ -456,11 +500,11 @@ function init() {
             console.log("States loaded."); // continue execution from here.
             loadStates(beginUI);
         } else {
-            setTimeout(stateLoadPoller, 100);
+            setTimeout(stateLoadPoller, App.pollerDelay);
         }
     }
 
-    setTimeout(stateLoadPoller, 100);
+    setTimeout(stateLoadPoller, App.pollerDelay);
 }
 
 window.onload = init;
