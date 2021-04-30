@@ -348,14 +348,12 @@ function renderStateResourceData(list, stateName, resName) {
     let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
     list.sort(function(a, b) {
         if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
-            // console.log(270)
             return -1;
         }
         if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
-            // console.log(274)
             return -1;
         }
-        if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
+        if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
             return 1;
         }
         return 0;
