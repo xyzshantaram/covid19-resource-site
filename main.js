@@ -203,45 +203,115 @@ function toggleElementDisplay(selector) {
     }
 }
 
-function renderCard(obj) {
-    if (obj.Verified === "no") {
-        return;
-    }
-    let container = document.getElementById("information");
-    let elements = ``;
+let cardCount = 0;
 
-    for (let key in obj) {
+function renderCard(obj) {
+    console.log(obj);
+    let container = document.getElementById("information");
+
+    let company = '', companyEle = '', companyList = ['Company', 'Entity', 'Company Name', 'Contact Name'];
+    let p_name = '', nameEle = '', nameList = ['Name', 'Contact Person Name'];
+    let number= '', numberEle = '', numberList = ['Number', 'Contact Number', 'Phone', ''];
+    let area = '', areaEle = '', areaList = ['Area', 'City', 'Zone'];
+    let comment = '', commentEle = '', commentList = ['Status', 'Comment', 'Remarks', 'Comment.'];
+
+    for(let key in obj) {
         if (key === "Verified") continue;
         if (!Boolean(key) || !Boolean(obj[key])) continue;
-        let elt = `
-        <div>
-            <div class='d-inline fs-5' style='font-weight: 500'>${capitaliseFirstLetter(key)}: </div>
-            <div class='d-inline fs-5' style='font-weight: 400'>${obj[key]}</div>
-        </div>`;
-        elements += elt;
+        console.log(key + "=" + obj[key]);
+
+        if(companyList.includes(key)) 
+            company = company + obj[key] + ' ';
+        else if(nameList.includes(key)) 
+            p_name = p_name + obj[key] + ' ';
+        else if(numberList.includes(key)) 
+            number = number + obj[key] + ', ';
+        else if(areaList.includes(key))
+            area = area + obj[key];
+        else if(commentList.includes(key)) 
+            comment = comment + obj[key] + '. ';
+
+        if(company != '') 
+            companyEle = `<h5 class="fs-5 text-wrap">${company}</h5>`;
+        
+        if(p_name != '') {
+            nameEle =
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                    <i class="fas fa-user svg"></i>
+                    ${p_name}
+            </h6>`;
+            // console.log(p_name, nameEle)
+        }
+        
+        if(number != '') {
+            numberEle = 
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                    <i class="fas fa-phone-alt svg"></i>
+                    ${number}
+            </h6>`;
+        }
+        
+        if(area != '') {
+            // alert(area);
+            areaEle =
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-map-marker-alt svg"></i>
+                ${area}
+             </h6>`;
+        }
+
+        if(comment != '') {
+            commentEle =
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-comment svg"></i>
+                ${comment}
+             </h6>`;
+        }
     }
 
     let status = obj.Verified === "yes" ? "success" : "warning";
-    let badgeNotice = obj.Verified === "yes" ? "Verified" : "Unverified";
-    let warning = obj.Verified === "yes" ? "" :
-        `<span class='alert alert-warning' style='font-size: 10px'>
-            This lead is unverified. Information is potentially incorrect. Use at your own risk.
-        </span>`;
-    let badge = `<span class="badge bg-${status} mt-2"
-        style="padding: 1em 1em; height: fit-content; font-weight: 500; width: auto;">
-        ${badgeNotice}
-    </span>`;
-    elements += badge + warning;
-
-    let card_markup = `
-        <div class="card-body pb-2">
-            <div class="d-flex flex-column align-items-left">
-                ${elements}
-            </div>
+    let statusEleHead = '';
+    let statusEleFoot = '';
+    if(status == 'success') {
+        statusEleFoot = 
+        `<div class="card-footer text-center">
+            Verified
         </div>`;
-    let card = createElementWithClass("div", "card mt-4");
-    card.innerHTML = card_markup;
-    container.appendChild(card);
+        statusEleHead = '';
+    } else {
+        statusEleHead = 
+        `<div class="card-header text-center">
+            This lead is unverified. Information potentially incorrect; use at your own risk!
+        </div>`;
+        statusEleFoot = '';
+    }
+    console.log(company + p_name + number + area + comment);
+    console.log(companyEle);
+    console.log(numberEle);
+    console.log(nameEle);
+    console.log(areaEle);
+        
+        
+        let cardGen =
+        `
+        <div class="col-lg-6 col-12 p-lg-2 px-0 py-1">
+            <div class="card mt-4 alert-${status}">
+                ${statusEleHead}
+                <div class="card-body pb-2">
+                    <div class="d-flex flex-sm-row flex-column justify-content-between">
+                        <div>`
+                            + companyEle + nameEle + numberEle + areaEle + commentEle +
+                        `</div>
+                    </div>
+                </div>
+                ${statusEleFoot}
+            </div>
+        </div>
+        `;
+
+    // console.log(cardGen);
+    if(obj.Verified!='no')
+        container.innerHTML += cardGen;
 }
 
 function populateStateDropdown() {
@@ -278,6 +348,11 @@ function renderStateResourceData(list, stateName, resName) {
     let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
     list.sort(function(a, b) {
         if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
+            // console.log(270)
+            return -1;
+        }
+        if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
+            // console.log(274)
             return -1;
         }
         if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
@@ -290,9 +365,18 @@ function renderStateResourceData(list, stateName, resName) {
     setElementStyleProp(title, "display", "block");
     title.innerHTML = `Resource list: ${resName} in ${stateName}`;
     container.innerHTML = "";
-    for (let x of list) {
-        renderCard(x);
+    console.log(list);
+
+    //Display only 10 enteries first
+    for(let i=0; i<10; i++) {
+        renderCard(list[i]);
+        cardCount ++;
+        // console.log(cardCount);
     }
+//     for (let x of list) {
+//         renderCard(x);
+//     }
+// }
 }
 
 
