@@ -54,8 +54,6 @@ function getStateIndex(stateName) {
         App.loadedStateIndicesCount += 1;
         App.data.stateIndices[`${stateName}`] = cached;
     } else {
-        console.log(`Attempting to fetch data for state ${stateName}`);
-
         function onGetIndexSuccess(data) {
             if (data.status === "OK") {
                 let rehydratedData = Papa.parse(data.text, PAPA_OPTIONS).data;
@@ -329,7 +327,6 @@ function renderCard(obj) {
             </div>
         </div>
         `;
-    console.log
     container.innerHTML += cardGen;
 }
 
@@ -369,7 +366,6 @@ function renderStateResourceData(list, stateName, resName) {
     setElementStyleProp(title, "display", "block");
     title.innerHTML = `Resource list: ${resName} in ${stateName}`;
     container.innerHTML = "";
-    console.log(list);
 
     list.forEach(item => {
         renderCard(item)
@@ -441,7 +437,6 @@ function beginUI() {
         // Error Handling
 
         if (App.loadedStateIndicesCount > 0) {
-            console.log("some states couldn't be loaded");
             // TODO: replace with dialogue box
         } else {
             return;
@@ -541,7 +536,6 @@ function init() {
 
     function stateLoadPoller() {
         if (App.statesLoaded) {
-            console.log("States loaded."); // continue execution from here.
             loadStates(beginUI);
         } else {
             setTimeout(stateLoadPoller, App.pollerDelay);
