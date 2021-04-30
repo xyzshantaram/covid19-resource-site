@@ -286,106 +286,33 @@ function renderCard(obj) {
     }
 
     let status = obj.Verified === "yes" ? "success" : "warning";
+    let statusEleHead = '';
+    let statusEleFoot = '';
+    if(status == 'success') {
+        statusEleFoot = 
+        `<div class="card-footer text-center">
+            Verified
+        </div>`;
+        statusEleHead = '';
+    } else {
+        statusEleHead = 
+        `<div class="card-header text-center">
+            This lead is unverified. Information potentially incorrect; use at your own risk!
+        </div>`;
+        statusEleFoot = '';
+    }
     console.log(company + p_name + number + area + comment);
     console.log(companyEle);
     console.log(numberEle);
     console.log(nameEle);
     console.log(areaEle);
-
-    /*if (obj.Verified === "no") {
-        return;
-    }
-    let container = document.getElementById("information");
-    let elements = ``;
-
-    for (let key in obj) {
-        // console.log(key, obj[key]) //Column name
-        if (key === "Verified") continue;
-        if (!Boolean(key) || !Boolean(obj[key])) {
-            console.log(key, obj[key]);
-            continue;
-        }
-        // console.log(key, obj[key]);
-        // let elt = `
-        // <div>
-        //     <div class='d-inline fs-5' style='font-weight: 500'>${capitaliseFirstLetter(key)}: </div>
-        //     <div class='d-inline fs-5' style='font-weight: 400'>${obj[key]}</div>
-        // </div>`;
-        // elements += elt;
-
-        if(companyList.includes(key)) 
-            company = company += obj[key];
-        if(nameList.includes(key)) 
-            p_name = p_name += obj[key];
-        if(numberList.includes(key)) 
-            number = number += obj[key];
-        if(areaList.includes(key))
-            area = area += obj[key];
-        if(commentList.includes(key)) 
-            comment = comment += obj[key];
-        }
-
-
-        let status = obj.Verified === "yes" ? "success" : "warning";
-
-        if(company!='') 
-            companyEle = `<h5 class="fs-5 text-wrap">${company}</h5>`;
-
-        nameELe =
-            `
-            <h6 class="fs-6 text-wrap d-flex align-items-center">
-                <i class="fas fa-user svg"></i>
-                 ${p_name}
-            </h6>
-            `;
-          
-
-        if(number!='') {
-            numberEle = 
-            `
-            <h6 class="fs-6 text-wrap d-flex align-items-center">
-                <i class="fas fa-phone-alt svg"></i>
-                ${number}
-                <a href='https://wa.me/${number}' class="rounded-pill btn btn-success" style="width: fit-content; font-size: 12px; margin-left: 15px; transform: scale(0.75);">
-                    Whatsapp
-                </a>
-            </h6>
-            `;
-        }
-
-        if(area!='') {
-            nameELe =
-            `
-            <h6 class="fs-6 text-wrap d-flex align-items-center">
-                <i class="fas fa-map-marker-alt svg"></i>
-                ${area}
-             </h6>
-            `;
-        }
-
-        if(comment!='') {
-            commentEle =
-            `
-            <button class="btn d-flex align-items-center" style="padding: 0;" type="button" data-bs-toggle="collapse" data-bs-target="#card${cardCount}" aria-expanded="false" aria-controls="collapseExample">
-                <i class="fas fa-plus svg"></i>
-                More Info
-            </button>
-            </p>
-            <div class="collapse" id="card${cardCount}">
-                <div class="container-fluid px-0">
-                    <h6>Comments: ${comment}</h6>
-                </div>
-            </div>
-            `;
-        
-
-        console.log(company + p_name + number + area + comment)*/
         
         
         let cardGen =
         `
         <div class="col-lg-6 col-12 p-lg-2 px-0 py-1">
             <div class="card mt-4 alert-${status}">
+                ${statusEleHead}
                 <div class="card-body pb-2">
                     <div class="d-flex flex-sm-row flex-column justify-content-between">
                         <div>`
@@ -393,9 +320,7 @@ function renderCard(obj) {
                         `</div>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    Verified 24mins ago
-                </div>
+                ${statusEleFoot}
             </div>
         </div>
         `;
@@ -404,29 +329,6 @@ function renderCard(obj) {
     if(obj.Verified!='no')
         container.innerHTML += cardGen;
 }
-
-    // let status = obj.Verified === "yes" ? "success" : "warning";
-    // let badgeNotice = obj.Verified === "yes" ? "Verified" : "Unverified";
-    // let warning = obj.Verified === "yes" ? "" :
-    //     `<span class='alert alert-warning' style='font-size: 10px'>
-    //         This lead is unverified. Information is potentially incorrect. Use at your own risk.
-    //     </span>`;
-    // let badge = `<span class="badge bg-${status} mt-2"
-    //     style="padding: 1em 1em; height: fit-content; font-weight: 500; width: auto;">
-    //     ${badgeNotice}
-    // </span>`;
-    // elements += badge + warning;
-
-    // let card_markup = `
-    //     <div class="card-body pb-2">
-    //         <div class="d-flex flex-column align-items-left">
-    //             ${elements}
-    //         </div>
-    //     </div>`;
-    // let card = createElementWithClass("div", "card mt-4");
-    // card.innerHTML = card_markup;
-    // container.appendChild(card);
-//}
 
 function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
@@ -491,6 +393,7 @@ function renderStateResourceData(list, stateName, resName) {
 //         renderCard(x);
 //     }
 // }
+}
 
 
 function setModalContent(content) {
