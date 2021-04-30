@@ -170,12 +170,13 @@ function renderButtons(resources) {
             let selectedState = document.getElementById("states-dropdown").value;
             if (selectedState === "---") return;
             Modal.show();
-            loadStateResource(selectedState, resource, onResLoadSuccess);
 
             function onResLoadSuccess(data) {
                 renderStateResourceData(data, selectedState, resource);
                 Modal.hide();
             }
+
+            loadStateResource(selectedState, resource, onResLoadSuccess);
         }
 
         resource = resource.trim();
@@ -441,8 +442,12 @@ function populateStateDropdown() {
     })
 }
 
-function renderStateResourceButtons() {
+function onStateDropdownChange() {
     // Renders relevant buttons and cards when a state is selected from the states dropdown
+    let container = document.getElementById("information");
+    let title = document.querySelector("label[for='information']");
+    setElementStyleProp(title, "display", "none");
+    container.innerHTML = "";
     let dropdownValue = document.getElementById("states-dropdown").value;
     if (dropdownValue != "---") {
         setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
@@ -454,7 +459,7 @@ function renderStateResourceButtons() {
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
-    let isInvalid = (item) => !Boolean(item) || item === "retry"
+    let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
     list.sort(function(a, b) {
         if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
             // console.log(270)
@@ -462,13 +467,17 @@ function renderStateResourceData(list, stateName, resName) {
         }
         if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
             // console.log(274)
+            return -1;
+        }
+        if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
             return 1;
         }
         return 0;
     });
     let container = document.getElementById("information");
-    let header = document.querySelector("label[for='information']");
-    header.innerHTML = `Resource list: ${resName} in ${stateName}`;
+    let title = document.querySelector("label[for='information']");
+    setElementStyleProp(title, "display", "block");
+    title.innerHTML = `Resource list: ${resName} in ${stateName}`;
     container.innerHTML = "";
     console.log(list);
 
@@ -478,20 +487,10 @@ function renderStateResourceData(list, stateName, resName) {
         cardCount ++;
         // console.log(cardCount);
     }
-    // for (let x of list) {
-    //     renderCard(x);
-    // }
-}
-
-//Function to render more data, will fix this tomorrow -_-
-function renderMore() {
-    for(let i=cardCount; i<cardCount+10; i++) {
-        renderCard(list[i]); //List undefined because of no reference
-        cardCount ++;
-        // console.log(cardCount);
-    }
-    
-}
+//     for (let x of list) {
+//         renderCard(x);
+//     }
+// }
 
 
 function setModalContent(content) {
@@ -526,6 +525,8 @@ function beginUI() {
 }
 
 function init() {
+    let resTitle = document.querySelector("label[for='information']");
+    setElementStyleProp(resTitle, "display", "none");
     // Create a loading modal
     Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
         backdrop: "static",
@@ -536,7 +537,7 @@ function init() {
     // Toggle the modal
     Modal.toggle();
 
-    document.querySelector("#states-dropdown").onchange = renderStateResourceButtons;
+    document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
         String.prototype.replaceAll = function(arg1, arg2) {
