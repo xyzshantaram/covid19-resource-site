@@ -166,7 +166,7 @@ function renderButtons(resources) {
             resource
         );
 
-        button.onclick = function() {
+        button.onclick = function () {
             let selectedState = document.getElementById("states-dropdown").value;
             if (selectedState === "---") return;
             Modal.show();
@@ -199,7 +199,7 @@ function toggleElementDisplay(selector) {
     let elem = document.querySelector(selector);
     if (elem) {
         let d = elem.style.display;
-        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
+        (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
     }
 }
 
@@ -211,58 +211,58 @@ function renderCard(obj) {
 
     let company = '', companyEle = '', companyList = ['Company', 'Entity', 'Company Name', 'Contact Name'];
     let p_name = '', nameEle = '', nameList = ['Name', 'Contact Person Name'];
-    let number= '', numberEle = '', numberList = ['Number', 'Contact Number', 'Phone', ''];
+    let number = '', numberEle = '', numberList = ['Number', 'Contact Number', 'Phone', ''];
     let area = '', areaEle = '', areaList = ['Area', 'City', 'Zone'];
     let comment = '', commentEle = '', commentList = ['Status', 'Comment', 'Remarks', 'Comment.'];
 
-    for(let key in obj) {
+    for (let key in obj) {
         if (key === "Verified") continue;
         if (!Boolean(key) || !Boolean(obj[key])) continue;
         console.log(key + "=" + obj[key]);
 
-        if(companyList.includes(key)) 
+        if (companyList.includes(key))
             company = company + obj[key] + ' ';
-        else if(nameList.includes(key)) 
+        else if (nameList.includes(key))
             p_name = p_name + obj[key] + ' ';
-        else if(numberList.includes(key)) 
+        else if (numberList.includes(key))
             number = number + obj[key] + ', ';
-        else if(areaList.includes(key))
+        else if (areaList.includes(key))
             area = area + obj[key];
-        else if(commentList.includes(key)) 
+        else if (commentList.includes(key))
             comment = comment + obj[key] + '. ';
 
-        if(company != '') 
+        if (company != '')
             companyEle = `<h5 class="fs-5 text-wrap">${company}</h5>`;
-        
-        if(p_name != '') {
+
+        if (p_name != '') {
             nameEle =
-            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                `<h6 class="fs-6 text-wrap d-flex align-items-center">
                     <i class="fas fa-user svg"></i>
                     ${p_name}
             </h6>`;
             // console.log(p_name, nameEle)
         }
-        
-        if(number != '') {
-            numberEle = 
-            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+
+        if (number != '') {
+            numberEle =
+                `<h6 class="fs-6 text-wrap d-flex align-items-center">
                     <i class="fas fa-phone-alt svg"></i>
                     ${number}
             </h6>`;
         }
-        
-        if(area != '') {
+
+        if (area != '') {
             // alert(area);
             areaEle =
-            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                `<h6 class="fs-6 text-wrap d-flex align-items-center">
                 <i class="fas fa-map-marker-alt svg"></i>
                 ${area}
              </h6>`;
         }
 
-        if(comment != '') {
+        if (comment != '') {
             commentEle =
-            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                `<h6 class="fs-6 text-wrap d-flex align-items-center">
                 <i class="fas fa-comment svg"></i>
                 ${comment}
              </h6>`;
@@ -272,15 +272,15 @@ function renderCard(obj) {
     let status = obj.Verified === "yes" ? "success" : "warning";
     let statusEleHead = '';
     let statusEleFoot = '';
-    if(status == 'success') {
-        statusEleFoot = 
-        `<div class="card-footer text-center">
+    if (status == 'success') {
+        statusEleFoot =
+            `<div class="card-footer text-center">
             Verified
         </div>`;
         statusEleHead = '';
     } else {
-        statusEleHead = 
-        `<div class="card-header text-center">
+        statusEleHead =
+            `<div class="card-header text-center">
             This lead is unverified. Information potentially incorrect; use at your own risk!
         </div>`;
         statusEleFoot = '';
@@ -290,9 +290,9 @@ function renderCard(obj) {
     console.log(numberEle);
     console.log(nameEle);
     console.log(areaEle);
-        
-        
-        let cardGen =
+
+
+    let cardGen =
         `
         <div class="col-lg-6 col-12 p-lg-2 px-0 py-1">
             <div class="card mt-4 alert-${status}">
@@ -300,8 +300,8 @@ function renderCard(obj) {
                 <div class="card-body pb-2">
                     <div class="d-flex flex-sm-row flex-column justify-content-between">
                         <div>`
-                            + companyEle + nameEle + numberEle + areaEle + commentEle +
-                        `</div>
+        + companyEle + nameEle + numberEle + areaEle + commentEle +
+        `</div>
                     </div>
                 </div>
                 ${statusEleFoot}
@@ -310,7 +310,7 @@ function renderCard(obj) {
         `;
 
     // console.log(cardGen);
-    if(obj.Verified!='no')
+    if (obj.Verified != 'no')
         container.innerHTML += cardGen;
 }
 
@@ -346,7 +346,7 @@ function onStateDropdownChange() {
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
     let isInvalid = (item) => !Boolean(item) || item.toLocaleLowerCase() === "retry";
-    list.sort(function(a, b) {
+    list.sort(function (a, b) {
         if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
             return -1;
         }
@@ -365,16 +365,8 @@ function renderStateResourceData(list, stateName, resName) {
     container.innerHTML = "";
     console.log(list);
 
-    //Display only 10 enteries first
-    for(let i=0; i<10; i++) {
-        renderCard(list[i]);
-        cardCount ++;
-        // console.log(cardCount);
-    }
-//     for (let x of list) {
-//         renderCard(x);
-//     }
-// }
+    list.forEach(item => { renderCard(item) })
+    cardCount = list.length
 }
 
 
@@ -425,7 +417,7 @@ function init() {
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function(arg1, arg2) {
+        String.prototype.replaceAll = function (arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
