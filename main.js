@@ -61,7 +61,7 @@ function getStateIndex(stateName) {
                     categoryItems => categoryItems["Category"] // Move the array up from the nested category field
                 ).filter(Boolean).filter(word => word.trim().length > 0) // Check if the resource is not empty space
                 App.data.stateIndices[stateName] = stateResourceList;
-                cacheTimeStampedData(`${stateName}-index`, stateResourceList);
+                cacheTimeStampedData(`${stateName}-index`, stateResourceList, 150e3);
                 App.loadedStateIndicesCount += 1;
             } else {
                 throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
@@ -91,7 +91,7 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
         throw new Error(`State ${stateName} does not exist`);
     }
 
-    if (!(App.data.stateIndices[stateName].includes(resName))) {
+    if (!(App.data.stateIndices[stateName].includes(resName.trim()))) {
         throw new Error(`Resource ${resName} not present for state ${stateName}`);
     }
 
