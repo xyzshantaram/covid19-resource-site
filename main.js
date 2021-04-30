@@ -105,7 +105,7 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
         } else {
             if (onLoadSuccess) {
                 let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
-                value.sort(function(a, b) {
+                value.sort(function (a, b) {
                     if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
                         return 1;
                     }
@@ -181,7 +181,7 @@ function renderButtons(resources) {
             resource
         );
 
-        button.onclick = function() {
+        button.onclick = function () {
             let selectedState = document.getElementById("states-dropdown").value;
             if (selectedState === "---") return;
             showLoadingDialog();
@@ -214,7 +214,7 @@ function toggleElementDisplay(selector) {
     let elem = document.querySelector(selector);
     if (elem) {
         let d = elem.style.display;
-        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
+        (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
     }
 }
 
@@ -395,33 +395,38 @@ function hideDialog() {
     Modal.hide();
 }
 
-function setModalContent(content, eltString, header, isDismissable) {
+function setModalContent(content, eltString, header, isDismissable, staticBackdrop) {
     // Sets the content of the reusable modal
     document.getElementById("modal-content-wrapper").innerHTML = `
-    ${(function() {
-        if (header) {
-            return `
+    ${(function () {
+            if (header) {
+                return `
             <div class='modal-header' id='modal-header'>
                 ${header}
             </div>`
-        }
-        return "";
-    })()}
+            }
+            return "";
+        })()}
     <div class="container-fluid d-flex align-items-center flex-column">
         <div id="reusable-modal-content" class="modal-body">
         ${eltString}
         ${content}
         </div>
     </div>
-    ${(function() {
-        if (isDismissable) {
-            return `
+    ${(function () {
+            if (isDismissable) {
+                return `
             <div class='modal-footer' id='modal-footer'>
                 <button type="button" class="btn btn-secondary" onclick="hideDialog()">Close</button>
             </div>`
-        }
-        return "";
-    })()}`;
+            }
+            return "";
+        })()}`;
+
+    if (staticBackdrop)
+        document.getElementById("reusable-modal").setAttribute("data-bs-backdrop", "static");
+    else
+        document.getElementById("reusable-modal").setAttribute("data-bs-backdrop", "");
 }
 
 function SetModalSpinnerDisplay(state) {
@@ -464,6 +469,7 @@ function infoButtonHandler() {
         <div>Check out our:
             <ul>
             <li><a href='https://instagram.com/covid.resources.india'>Instagram page</a></li>
+            <li><a href='https://linktr.ee/Eccentric.Blue'>LinkTree</a></li>
             <li><a href='#'>Twitter page</a></li></li>
             </ul>
         </div>
@@ -500,7 +506,7 @@ function init() {
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function(arg1, arg2) {
+        String.prototype.replaceAll = function (arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
