@@ -385,12 +385,12 @@ function showLoadingDialog() {
 
 
 function showInfoDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4"></i>`, "Information", true);
+    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4 mt-1 mb-1"></i>`, "Information", true);
     Modal.show();
 }
 
 function showErrorDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4"></i>`, "Error", false);
+    setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4 mt-1 mb-1"></i>`, "Error", false);
     Modal.show();
 }
 
