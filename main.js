@@ -226,10 +226,8 @@ function renderCard(obj) {
             p_name = p_name + obj[key] + ' ';
         else if(numberList.includes(key)) 
             number = number + obj[key] + ', ';
-        else if(areaList.includes(key)) {
+        else if(areaList.includes(key))
             area = area + obj[key];
-            // alert(key + " = " + area);
-        }
         else if(commentList.includes(key)) 
             comment = comment + obj[key] + '. ';
 
@@ -238,51 +236,37 @@ function renderCard(obj) {
         
         if(p_name != '') {
             nameEle =
-                `<h6 class="fs-6 text-wrap d-flex align-items-center">
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
                     <i class="fas fa-user svg"></i>
                     ${p_name}
-                </h6>`;
-            console.log(p_name, nameEle)
+            </h6>`;
+            // console.log(p_name, nameEle)
         }
         
         if(number != '') {
             numberEle = 
-            `
-                <h6 class="fs-6 text-wrap d-flex align-items-center">
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
                     <i class="fas fa-phone-alt svg"></i>
                     ${number}
-                </h6>
-            `;
+            </h6>`;
         }
         
         if(area != '') {
             // alert(area);
             areaEle =
-            `
-            <h6 class="fs-6 text-wrap d-flex align-items-center">
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
                 <i class="fas fa-map-marker-alt svg"></i>
                 ${area}
-             </h6>
-            `;
+             </h6>`;
         }
 
         if(comment != '') {
             commentEle =
-            `
-            <button class="btn d-flex align-items-center" style="padding: 0;" type="button" data-bs-toggle="collapse" data-bs-target="#card${cardCount}" aria-expanded="false" aria-controls="collapseExample">
-                <i class="fas fa-plus svg"></i>
-                More Info
-            </button>
-            </p>
-            <div class="collapse" id="card${cardCount}">
-                <div class="container-fluid px-0">
-                    <h6>Comments: ${comment}</h6>
-                </div>
-            </div>
-            `;
+            `<h6 class="fs-6 text-wrap d-flex align-items-center">
+                <i class="fas fa-comment svg"></i>
+                ${comment}
+             </h6>`;
         }
-
-
     }
 
     let status = obj.Verified === "yes" ? "success" : "warning";
