@@ -412,8 +412,8 @@ function setModalContent(content, eltString, header, isDismissable) {
         return "";
     })()}
     <div class="container-fluid d-flex align-items-center flex-column">
-        ${eltString}
         <div id="reusable-modal-content" class="modal-body">
+        ${eltString}
         ${content}
         </div>
     </div>
