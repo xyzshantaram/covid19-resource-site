@@ -379,12 +379,6 @@ function showLoadingDialog() {
     Modal.show();
 }
 
-
-function showInfoDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4 mt-1 mb-1"></i>`, "Information", true);
-    Modal.show();
-}
-
 function showErrorDialog(msg) {
     setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4 mt-1 mb-1"></i>`, "Error", false);
     Modal.show();
@@ -450,50 +444,13 @@ function beginUI() {
 
     // Rendering code on success
     hideDialog();
-    infoButtonHandler();
+    // Show the help modal
+    new bootstrap.Modal(document.getElementById("help-modal"), {}).show();
     populateStateDropdown();
-}
-
-function infoButtonHandler() {
-    showInfoDialog(`
-        <div>Welcome to covid.resources.india's official website.</div>
-        <div>
-        How to use:
-        <ol>
-        <li>Select a state using the dropdown box.</li>
-        <li>Click one of the resource buttons to view leads for that resource in that state.</li>
-        <li>Verified resources have a green badge at the bottom, and have been verified by our volunteers.</li>
-        <li>Unverified resources have not been verified yet, but still have a chance of working.</li>
-        </ol>
-        </div>
-        <div>Check out our:
-            <ul>
-            <li><a href='https://instagram.com/covid.resources.india'>Instagram page</a></li>
-            <li><a href='https://linktr.ee/Eccentric.Blue'>LinkTree</a></li>
-            <li><a href='#'>Twitter page</a></li></li>
-            </ul>
-        </div>
-        <div>
-            <a href='https://github.com/shantaram3013/covid19-resource-site/issues'>Report bugs</a>
-            to <a href='https://github.com/shantaram3013/covid19-resource-site'>GitHub.</a>
-        </div>
-        <div> This site and the data it displays is collected and maintained by volunteers.
-            <a href='https://www.instagram.com/covid.resources.india/'>
-            Click here for information on volunteering.
-            </a>
-        </div>
-        <div>
-        Made with <i class="fas fa-heart"></i> by <a href='https://github.com/dakshsethi'>Daksh Sethi</a>,
-        <a href='https://github.com/kinshukdua'>Kinshuk Dua</a>,
-        <a href='https://github.com/Krishna-Sivakumar'>Krishna Sivakumar</a>,
-        and <a href='https://github.com/shantaram3013'>Siddharth Singh</a>
-        </div>
-    `)
 }
 
 function init() {
     let resTitle = document.querySelector("label[for='information']");
-    document.querySelector('#info-button').addEventListener('click', infoButtonHandler);
     setElementStyleProp(resTitle, "display", "none");
     // Create a loading modal
     Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {

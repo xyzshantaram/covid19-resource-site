@@ -9,14 +9,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1d39151f79.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css"
+        integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700;800&display=swap"
+        rel="stylesheet">
 </head>
 
 <body class='min-vh-100 d-flex flex-column h-100'>
@@ -35,10 +41,64 @@
             </div>
         </div>
     </div>
+    <div id="help-modal" class="modal" tabindex="-1">
+        <!--Modal to show initially helpful information and credits-->
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" id='modal-content-wrapper'>
+                <div class="modal-header">
+                    Information
+                </div>
+                <div class="modal-body">
+                    <i class="fas fa-exclamation-circle fs-4 mt-1 mb-1"></i>
+                    <div>Welcome to covid.resources.india's official website.</div>
+                    <div>
+                        How to use:
+                        <ol>
+                            <li>Select a state using the dropdown box.</li>
+                            <li>Click one of the resource buttons to view leads for that resource in that state.</li>
+                            <li>Verified resources have a green badge at the bottom, and have been verified by our
+                                volunteers.</li>
+                            <li>Unverified resources have not been verified yet, but still have a chance of working.
+                            </li>
+                        </ol>
+                    </div>
+                    <div>Check out our:
+                        <ul>
+                            <li><a href='https://instagram.com/covid.resources.india'>Instagram page</a></li>
+                            <li><a href='https://linktr.ee/Eccentric.Blue'>LinkTree</a></li>
+                            <li><a href='#'>Twitter page</a></li>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <a href='https://github.com/shantaram3013/covid19-resource-site/issues'>Report bugs</a>
+                        to <a href='https://github.com/shantaram3013/covid19-resource-site'>GitHub.</a>
+                    </div>
+                    <div>
+                        This site and the data it displays is collected and maintained by volunteers.
+                        <a href='https://www.instagram.com/covid.resources.india/'>
+                            Click here for information on volunteering.
+                        </a>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <div>
+                        Made with <i class="fas fa-heart"></i> by <a href='https://github.com/dakshsethi'>Daksh
+                            Sethi</a>,
+                        <a href='https://github.com/kinshukdua'>Kinshuk Dua</a>,
+                        <a href='https://github.com/Krishna-Sivakumar'>Krishna Sivakumar</a>,
+                        and <a href='https://github.com/shantaram3013'>Siddharth Singh</a>
+                    </div>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" aria-label="close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <nav class="navbar navbar-dark bg-dark mb-3">
         <div class="container-fluid d-flex align-items-center px-3 py-2">
             <a class="navbar-brand">COVID RESOURCES INDIA</a>
-            <button class="btn btn-outline-success" type="button" id='info-button'>Help/About</button>
+            <button class="btn btn-outline-success" type="button" id='info-button' data-bs-toggle="modal"
+                data-bs-target="#help-modal">Help/About</button>
         </div>
     </nav>
 
@@ -46,11 +106,13 @@
         <div class="accordion" id="filterAccordion">
             <div class="accordion-item">
                 <h2 class="accordion-header" id="headingOne">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                         Filters
                     </button>
                 </h2>
-                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                    data-bs-parent="#accordionExample">
                     <div class="accordion-body">
 
                         <div class="row d-flex">
