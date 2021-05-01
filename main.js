@@ -18,6 +18,7 @@ const PAPA_OPTIONS = {
 }
 
 let Modal = undefined
+let loadingModal = undefined    // variable declaration for the loading modal
 
 function getSheetID(url) {
     return url.split("/")[5];
@@ -188,7 +189,7 @@ function renderButtons(resources) {
 
             function onResLoadSuccess(data) {
                 renderStateResourceData(data, selectedState, resource);
-                hideDialog();
+                loadingModal.hide();
             }
 
             loadStateResource(selectedState, resource, onResLoadSuccess);
@@ -217,8 +218,6 @@ function toggleElementDisplay(selector) {
         (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
     }
 }
-
-let cardCount = 0;
 
 function renderCard(obj) {
     if (obj.Verified && obj.Verified.toLocaleLowerCase() === "no") return;
@@ -370,19 +369,11 @@ function renderStateResourceData(list, stateName, resName) {
     list.forEach(item => {
         renderCard(item)
     })
-    cardCount = list.length
 }
 
 function showLoadingDialog() {
-    let spinner = `<img src="assets/Spinner-1s-200px.svg" width="20%" id='loading-spinner'>`;
-    setModalContent("Loading...", spinner, null, false);
-    Modal.show();
-}
-
-
-function showInfoDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-circle fs-4 mt-1 mb-1"></i>`, "Information", true);
-    Modal.show();
+    // Shows the loading modal
+    loadingModal.show();
 }
 
 function showErrorDialog(msg) {
@@ -390,50 +381,32 @@ function showErrorDialog(msg) {
     Modal.show();
 }
 
-function hideDialog() {
-    setModalContent("", "");
-    Modal.hide();
-}
-
 function setModalContent(content, eltString, header, isDismissable, staticBackdrop) {
-    // Sets the content of the reusable modal
-    document.getElementById("modal-content-wrapper").innerHTML = `
-    ${(function () {
-            if (header) {
-                return `
-            <div class='modal-header' id='modal-header'>
-                ${header}
-            </div>`
-            }
-            return "";
-        })()}
-    <div class="container-fluid d-flex align-items-center flex-column">
-        <div id="reusable-modal-content" class="modal-body">
-        ${eltString}
-        ${content}
-        </div>
-    </div>
-    ${(function () {
-            if (isDismissable) {
-                return `
-            <div class='modal-footer' id='modal-footer'>
-                <button type="button" class="btn btn-secondary" onclick="hideDialog()">Close</button>
-            </div>`
-            }
-            return "";
-        })()}`;
+    /*
+    Sets the content of the reusable modal
+    content:        content of the modal's body
+    eltString:      (don't know what this does yet... Whoever knows add it in)
+    header:         content of the modal's header
+    isDismissable:  renders a close button if the modal is closable
+    staticBackdrop: makes the modal's backdrop static if true
+    */
 
-    if (staticBackdrop)
-        document.getElementById("reusable-modal").setAttribute("data-bs-backdrop", "static");
-    else
-        document.getElementById("reusable-modal").setAttribute("data-bs-backdrop", "");
-}
+    // Checking if the arguments are undefined and setting the contents to empty strings, if so
+    header = header ? header : ""
+    content = content ? content : ""
+    eltString = eltString ? eltString : ""
 
-function SetModalSpinnerDisplay(state) {
-    let propString = "none";
-    if (state) propString = "block";
-    let spinner = document.querySelector('#loading-spinner');
-    setElementStyleProp(spinner, display, propString);
+    // Setting the modal's contents here
+    document.getElementById("reusable-modal-header").innerHTML = header
+    document.getElementById("reusable-modal-content").innerHTML = `${eltString} ${content}`
+    if (isDismissable) {
+        document.getElementById("reusable-modal-footer").innerHTML = `<button class="btn btn-secondary" data-bs-dismiss="modal" aria-label="close">Close</button>`;
+    }
+
+    // Overwriting the old modal object with a new one
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
+        static: staticBackdrop ? "static" : ""
+    })
 }
 
 function beginUI() {
@@ -449,58 +422,23 @@ function beginUI() {
     }
 
     // Rendering code on success
-    hideDialog();
-    infoButtonHandler();
+    loadingModal.hide();    // Hide the loading modal
+    new bootstrap.Modal(document.getElementById("help-modal"), {}).show();  // Show the help modal
     populateStateDropdown();
-}
-
-function infoButtonHandler() {
-    showInfoDialog(`
-        <div>Welcome to covid.resources.india's official website.</div>
-        <div>
-        How to use:
-        <ol>
-        <li>Select a state using the dropdown box.</li>
-        <li>Click one of the resource buttons to view leads for that resource in that state.</li>
-        <li>Verified resources have a green badge at the bottom, and have been verified by our volunteers.</li>
-        <li>Unverified resources have not been verified yet, but still have a chance of working.</li>
-        </ol>
-        </div>
-        <div>Check out our:
-            <ul>
-            <li><a href='https://instagram.com/covid.resources.india'>Instagram page</a></li>
-            <li><a href='https://linktr.ee/Eccentric.Blue'>LinkTree</a></li>
-            <li><a href='#'>Twitter page</a></li></li>
-            </ul>
-        </div>
-        <div>
-            <a href='https://github.com/shantaram3013/covid19-resource-site/issues'>Report bugs</a>
-            to <a href='https://github.com/shantaram3013/covid19-resource-site'>GitHub.</a>
-        </div>
-        <div> This site and the data it displays is collected and maintained by volunteers.
-            <a href='https://www.instagram.com/covid.resources.india/'>
-            Click here for information on volunteering.
-            </a>
-        </div>
-        <div>
-        Made with <i class="fas fa-heart"></i> by <a href='https://github.com/dakshsethi'>Daksh Sethi</a>,
-        <a href='https://github.com/kinshukdua'>Kinshuk Dua</a>,
-        <a href='https://github.com/Krishna-Sivakumar'>Krishna Sivakumar</a>,
-        and <a href='https://github.com/shantaram3013'>Siddharth Singh</a>
-        </div>
-    `)
 }
 
 function init() {
     let resTitle = document.querySelector("label[for='information']");
-    document.querySelector('#info-button').addEventListener('click', infoButtonHandler);
     setElementStyleProp(resTitle, "display", "none");
-    // Create a loading modal
-    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
-        backdrop: "static",
-        focus: true,
-        keyboard: true
+
+    // Instantiate a reusable modal
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {});
+
+    // Instantiate a loading modal
+    loadingModal = new bootstrap.Modal(document.getElementById("loading-modal"), {
+        backdrop: "static"  // Note: setting data-bs-backdrop on the modal div doesn't work
     });
+
     showLoadingDialog();
 
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
