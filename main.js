@@ -375,6 +375,7 @@ function renderStateResourceData(list, stateName, resName) {
 }
 
 function showLoadingDialog() {
+    // Shows the loading modal
     loadingModal.show();
 }
 
@@ -383,50 +384,32 @@ function showErrorDialog(msg) {
     Modal.show();
 }
 
-function hideDialog() {
-    setModalContent("", "");
-    Modal.hide();
-}
-
 function setModalContent(content, eltString, header, isDismissable, staticBackdrop) {
-    // Sets the content of the reusable modal
-    document.getElementById("modal-content-wrapper").innerHTML = `
-    ${(function () {
-            if (header) {
-                return `
-            <div class='modal-header' id='modal-header'>
-                ${header}
-            </div>`
-            }
-            return "";
-        })()}
-    <div class="container-fluid d-flex align-items-center flex-column">
-        <div id="reusable-modal-content" class="modal-body">
-        ${eltString}
-        ${content}
-        </div>
-    </div>
-    ${(function () {
-            if (isDismissable) {
-                return `
-            <div class='modal-footer' id='modal-footer'>
-                <button type="button" class="btn btn-secondary" onclick="hideDialog()">Close</button>
-            </div>`
-            }
-            return "";
-        })()}`;
+    /*
+    Sets the content of the reusable modal
+    content:        content of the modal's body
+    eltString:      (don't know what this does yet... Whoever knows add it in)
+    header:         content of the modal's header
+    isDismissable:  renders a close button if the modal is closable
+    staticBackdrop: makes the modal's backdrop static if true
+    */
 
-    if (staticBackdrop)
-        document.getElementById("reusable-modal").setAttribute("data-bs-backdrop", "static");
-    else
-        document.getElementById("reusable-modal").setAttribute("data-bs-backdrop", "");
-}
+    // Checking if the arguments are undefined and setting the contents to empty strings, if so
+    header = header ? header : ""
+    content = content ? content : ""
+    eltString = eltString ? eltString : ""
 
-function SetModalSpinnerDisplay(state) {
-    let propString = "none";
-    if (state) propString = "block";
-    let spinner = document.querySelector('#loading-spinner');
-    setElementStyleProp(spinner, display, propString);
+    // Setting the modal's contents here
+    document.getElementById("reusable-modal-header").innerHTML = header
+    document.getElementById("reusable-modal-content").innerHTML = `${eltString} ${content}`
+    if (isDismissable) {
+        document.getElementById("reusable-modal-footer").innerHTML = `<button class="btn btn-secondary" data-bs-dismiss="modal" aria-label="close">Close</button>`;
+    }
+
+    // Overwriting the old modal object with a new one
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
+        static: staticBackdrop ? "static" : ""
+    })
 }
 
 function beginUI() {
@@ -450,15 +433,15 @@ function beginUI() {
 function init() {
     let resTitle = document.querySelector("label[for='information']");
     setElementStyleProp(resTitle, "display", "none");
-    // Create a loading modal
-    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
-        backdrop: "static",
-        focus: true,
-        keyboard: true
-    });
+
+    // Instantiate a reusable modal
+    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {});
+
+    // Instantiate a loading modal
     loadingModal = new bootstrap.Modal(document.getElementById("loading-modal"), {
-        backdrop: "static"
+        backdrop: "static"  // Note: setting data-bs-backdrop on the modal div doesn't work
     });
+
     showLoadingDialog();
 
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
