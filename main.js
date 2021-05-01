@@ -9,6 +9,25 @@ const App = {
     pollerDelay: 200
 }
 
+class Performance {
+    constructor(name) {
+        this.startTime = performance.now();
+        this.name = name;
+    }
+
+    endBenchmark() {
+        return performance.now() - this.startTime;
+    }
+
+    log() {
+        let name = this.name;
+        let task = ((str) => {
+            return str ? `Task '${str}'` : `Task`
+        })(name);
+        console.log(`${task} took ${this.endBenchmark()/1000}s to complete`);
+    };
+}
+
 const PAPA_OPTIONS = {
     header: true,
     delimiter: ',',
@@ -18,7 +37,7 @@ const PAPA_OPTIONS = {
 }
 
 let Modal = undefined
-let loadingModal = undefined    // variable declaration for the loading modal
+let loadingModal = undefined // variable declaration for the loading modal
 
 function getSheetID(url) {
     return url.split("/")[5];
@@ -30,6 +49,8 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
 
     params.set("id", id);
     params.set("sheetName", sheetName);
+
+    let loadTime = new Performance(`load ${sheetName}`);
     const URL_BASE = `https://googlesheets-proxy.herokuapp.com`;
     let getUrl = `${URL_BASE}/dl?${params.toString()}`; // loading through the proxy for CORS reasons
     fetch(getUrl, {
@@ -38,13 +59,14 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
         return response.json();
     }).then(data => {
         onSuccess(data)
+        loadTime.log();
     }).catch((error) => {
         console.error('Error:', error);
         if (onErr) onErr(err);
     });
 }
 
-function getStateIndex(stateName) {
+function loadStateIndex(stateName) {
     if (!App.statesLoaded || !App.data.stateLinks) {
         return;
     }
@@ -60,10 +82,9 @@ function getStateIndex(stateName) {
                 let rehydratedData = Papa.parse(data.text, PAPA_OPTIONS).data;
                 stateResourceList = rehydratedData.map(
                     categoryItems => categoryItems["Category"] // Move the array up from the nested category field
-                ).filter(Boolean).filter(word => word.trim().length > 0) // Check if the resource is not empty space
+                ).filter(Boolean).filter(word => word.trim().length > 0) // Check if the resource is empty or undefined
                 App.data.stateIndices[stateName] = stateResourceList;
                 cacheTimeStampedData(`${stateName}-index`, stateResourceList, 150e3);
-                App.loadedStateIndicesCount += 1;
             } else {
                 throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
             }
@@ -77,15 +98,14 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
     let waits = 0;
 
     if (App.data.stateResources[stateName][resName]) {
+        console.log('value');
         value = App.data.stateResources[stateName][resName];
+        if (onLoadSuccess) onLoadSuccess(value);
+        return;
     }
 
-    if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
-        if (App.loadedStateIndicesCount > 0) {
-            console.error("some states aren't loaded");
-        } else {
-            return;
-        }
+    if (!App.statesLoaded) {
+        return;
     }
 
     if (!(stateName in App.data.stateIndices)) {
@@ -104,17 +124,19 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
             setTimeout(resourceLoadPoller, App.pollerDelay);
             waits += 1;
         } else {
+            let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
+            let sortPerformance = new Performance(`sort ${stateName} ${resName}`);
+            value.sort(function(a, b) {
+                if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
+                    return 1;
+                }
+                if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
+                    return -1;
+                }
+                return 0;
+            });
+            sortPerformance.log();
             if (onLoadSuccess) {
-                let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
-                value.sort(function (a, b) {
-                    if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
-                        return 1;
-                    }
-                    if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
-                        return -1;
-                    }
-                    return 0;
-                });
                 onLoadSuccess(value);
             }
         }
@@ -123,6 +145,7 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
     function onGetResourceSuccess(data) {
         if (data.status === "OK") {
             value = Papa.parse(data.text, PAPA_OPTIONS).data;
+            App.data.stateResources[stateName][resName] = value;
         } else {
             throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
         }
@@ -132,33 +155,11 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
     setTimeout(resourceLoadPoller, App.pollerDelay);
 }
 
-function loadStates(next) {
-    if (!App.statesLoaded) {
-        return null;
-    }
-
+function initialiseStates() {
     let states = Object.keys(App.data.stateLinks);
     for (let x of states) {
-        try {
-            getStateIndex(x);
-        } catch (e) {
-            throw new Error(`Loading data for state ${x} failed. More info: \n${e}`);
-        }
-
         App.data.stateResources[x] = {};
     }
-
-    function indicesLoadPoller(calls) {
-        let count = calls + 1;
-        let getLoadedIndicesCount = () => Object.keys(App.data.stateIndices).length;
-        if (getLoadedIndicesCount() === states.length || count > 100) {
-            next();
-        } else {
-            setTimeout(indicesLoadPoller, App.pollerDelay, count);
-        }
-    }
-
-    setTimeout(indicesLoadPoller, App.pollerDelay, 0);
 }
 
 function createElementWithClass(type, class_name, text, style) {
@@ -182,7 +183,7 @@ function renderButtons(resources) {
             resource
         );
 
-        button.onclick = function () {
+        button.onclick = function() {
             let selectedState = document.getElementById("states-dropdown").value;
             if (selectedState === "---") return;
             showLoadingDialog();
@@ -215,7 +216,7 @@ function toggleElementDisplay(selector) {
     let elem = document.querySelector(selector);
     if (elem) {
         let d = elem.style.display;
-        (d === 'none') ? setElementStyleProp(elem, "display", "block") : setElementStyleProp(elem, "display", "none");
+        (d === 'none') ? setElementStyleProp(elem, "display", "block"): setElementStyleProp(elem, "display", "none");
     }
 }
 
@@ -331,10 +332,11 @@ function renderCard(obj) {
 
 function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
+    console.log('hi')
     let statesDropdown = document.getElementById("states-dropdown");
     statesDropdown.innerHTML = "<option>---</option>"; // Initialize dropdown with a placeholder value
-
-    Object.keys(App.data.stateIndices).forEach(element => {
+    console.log(statesDropdown)
+    Object.keys(App.data.stateLinks).forEach(element => {
         // Creates an option tag for each state in the stateIndices array
         let state = element.split('-')[0];
         let option = document.createElement("option");
@@ -345,14 +347,33 @@ function populateStateDropdown() {
 
 function onStateDropdownChange() {
     // Renders relevant buttons and cards when a state is selected from the states dropdown
-    let container = document.getElementById("information");
-    let title = document.querySelector("label[for='information']");
-    setElementStyleProp(title, "display", "none");
-    container.innerHTML = "";
     let dropdownValue = document.getElementById("states-dropdown").value;
-    if (dropdownValue != "---") {
-        setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
-        renderButtons(App.data.stateIndices[dropdownValue]);
+    let waits = 0;
+
+    if (dropdownValue !== "---") {
+        showLoadingDialog();
+        loadStateIndex(dropdownValue);
+
+        function indexLoadPoller() {
+            if (!App.data.stateIndices[dropdownValue]) {
+                if (waits > 100) {
+                    throw new Error("Error loading state index: timed out");
+                } else {
+                    setTimeout(indexLoadPoller, App.pollerDelay);
+                }
+                waits += 1;
+                return;
+            } else {
+                let container = document.getElementById("information");
+                let title = document.querySelector("label[for='information']");
+                setElementStyleProp(title, "display", "none");
+                container.innerHTML = "";
+                setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
+                renderButtons(App.data.stateIndices[dropdownValue]);
+                loadingModal.hide();
+            }
+        }
+        setTimeout(indexLoadPoller, App.pollerDelay);
     } else {
         setElementStyleProp(document.querySelector("#resource-group"), "display", "none");
     }
@@ -360,6 +381,7 @@ function onStateDropdownChange() {
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
+    let perf = new Performance(`render ${resName} data for ${stateName}`);
     let container = document.getElementById("information");
     let title = document.querySelector("label[for='information']");
     setElementStyleProp(title, "display", "block");
@@ -369,6 +391,7 @@ function renderStateResourceData(list, stateName, resName) {
     list.forEach(item => {
         renderCard(item)
     })
+    perf.log();
 }
 
 function showLoadingDialog() {
@@ -409,24 +432,6 @@ function setModalContent(content, eltString, header, isDismissable, staticBackdr
     })
 }
 
-function beginUI() {
-    // Entry point for rendering
-    if (!App.statesLoaded || (App.loadedStateIndicesCount != Object.keys(App.data.stateLinks).length)) {
-        // Error Handling
-
-        if (App.loadedStateIndicesCount > 0) {
-            // TODO: replace with dialogue box
-        } else {
-            return;
-        }
-    }
-
-    // Rendering code on success
-    loadingModal.hide();    // Hide the loading modal
-    new bootstrap.Modal(document.getElementById("help-modal"), {}).show();  // Show the help modal
-    populateStateDropdown();
-}
-
 function init() {
     let resTitle = document.querySelector("label[for='information']");
     setElementStyleProp(resTitle, "display", "none");
@@ -436,7 +441,7 @@ function init() {
 
     // Instantiate a loading modal
     loadingModal = new bootstrap.Modal(document.getElementById("loading-modal"), {
-        backdrop: "static"  // Note: setting data-bs-backdrop on the modal div doesn't work
+        backdrop: "static" // Note: setting data-bs-backdrop on the modal div doesn't work
     });
 
     showLoadingDialog();
@@ -444,7 +449,7 @@ function init() {
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
 
     if (!String.prototype.replaceAll) { // polyfill replaceAll
-        String.prototype.replaceAll = function (arg1, arg2) {
+        String.prototype.replaceAll = function(arg1, arg2) {
             let toRet = this;
             while (toRet.includes(arg1)) {
                 toRet = toRet.replace(arg1, arg2);
@@ -480,7 +485,10 @@ function init() {
 
     function stateLoadPoller() {
         if (App.statesLoaded) {
-            loadStates(beginUI);
+            initialiseStates();
+            loadingModal.hide();
+            new bootstrap.Modal(document.getElementById("help-modal"), {}).show(); // Show the help modal
+            populateStateDropdown();
         } else {
             setTimeout(stateLoadPoller, App.pollerDelay);
         }
