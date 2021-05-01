@@ -219,8 +219,6 @@ function toggleElementDisplay(selector) {
     }
 }
 
-let cardCount = 0;
-
 function renderCard(obj) {
     if (obj.Verified && obj.Verified.toLocaleLowerCase() === "no") return;
     let container = document.getElementById("information");
@@ -371,7 +369,6 @@ function renderStateResourceData(list, stateName, resName) {
     list.forEach(item => {
         renderCard(item)
     })
-    cardCount = list.length
 }
 
 function showLoadingDialog() {
