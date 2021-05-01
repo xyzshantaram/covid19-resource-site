@@ -9,13 +9,18 @@ const App = {
     pollerDelay: 200
 }
 
+// basic performance class. instantiate it right before performing an action, and call <obj>.log()
+// whenever you want to measure how long the task took.
+// the 'name' parameter provides an optional name by which to identify the task for which
+// performance was just logged.
+// Useful for testing the time taken by a series of tasks at once.
 class Performance {
     constructor(name) {
         this.startTime = performance.now();
         this.name = name;
     }
 
-    endBenchmark() {
+    getElapsed() {
         return performance.now() - this.startTime;
     }
 
@@ -24,7 +29,7 @@ class Performance {
         let task = ((str) => {
             return str ? `Task '${str}'` : `Task`
         })(name);
-        console.log(`${task} took ${this.endBenchmark()/1000}s to complete`);
+        console.log(`${task} took ${this.getElapsed()/1000}s to complete`);
     };
 }
 
@@ -98,7 +103,6 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
     let waits = 0;
 
     if (App.data.stateResources[stateName][resName]) {
-        console.log('value');
         value = App.data.stateResources[stateName][resName];
         if (onLoadSuccess) onLoadSuccess(value);
         return;
@@ -332,10 +336,8 @@ function renderCard(obj) {
 
 function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
-    console.log('hi')
     let statesDropdown = document.getElementById("states-dropdown");
     statesDropdown.innerHTML = "<option>---</option>"; // Initialize dropdown with a placeholder value
-    console.log(statesDropdown)
     Object.keys(App.data.stateLinks).forEach(element => {
         // Creates an option tag for each state in the stateIndices array
         let state = element.split('-')[0];
