@@ -29,7 +29,7 @@ class Performance {
         let task = ((str) => {
             return str ? `Task '${str}'` : `Task`
         })(name);
-        console.log(`${task} took ${this.getElapsed()/1000}s to complete`);
+        console.log(`${task} took ${this.getElapsed()}ms to complete`);
     };
 }
 
@@ -129,7 +129,6 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
             waits += 1;
         } else {
             let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
-            let sortPerformance = new Performance(`sort ${stateName} ${resName}`);
             value.sort(function(a, b) {
                 if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
                     return 1;
@@ -139,7 +138,6 @@ function loadStateResource(stateName, resName, onLoadSuccess) {
                 }
                 return 0;
             });
-            sortPerformance.log();
             if (onLoadSuccess) {
                 onLoadSuccess(value);
             }
@@ -319,7 +317,6 @@ function renderCard(obj) {
 
     let cardGen =
         `
-        <div class="col-lg-6 col-12 p-lg-2 px-0 py-1">
             <div class="card h-100 ml-2 mt-4 alert-${status}">
                 ${statusElements.header}
                 <div class="card-body pb-2">
@@ -329,9 +326,13 @@ function renderCard(obj) {
                 </div>
                 ${statusElements.footer}
             </div>
-        </div>
         `;
-    container.innerHTML += cardGen;
+    let fragment = document.createElement('div');
+    fragment.className = "col-lg-6 col-12 p-lg-2 px-0 py-1";
+    fragment.innerHTML = cardGen;
+    container.append(fragment); // this is a lot faster than innerHTML even though innerHTML is
+    // traditionally super fast because setting innerHTML forces the browser to re-render older
+    // cards that haven't changed, simply because the string itself changed
 }
 
 function populateStateDropdown() {
