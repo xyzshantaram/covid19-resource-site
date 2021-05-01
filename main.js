@@ -18,6 +18,7 @@ const PAPA_OPTIONS = {
 }
 
 let Modal = undefined
+let loadingModal = undefined    // variable declaration for the loading modal
 
 function getSheetID(url) {
     return url.split("/")[5];
@@ -188,7 +189,7 @@ function renderButtons(resources) {
 
             function onResLoadSuccess(data) {
                 renderStateResourceData(data, selectedState, resource);
-                hideDialog();
+                loadingModal.hide();
             }
 
             loadStateResource(selectedState, resource, onResLoadSuccess);
@@ -374,9 +375,7 @@ function renderStateResourceData(list, stateName, resName) {
 }
 
 function showLoadingDialog() {
-    let spinner = `<img src="assets/Spinner-1s-200px.svg" width="20%" id='loading-spinner'>`;
-    setModalContent("Loading...", spinner, null, false);
-    Modal.show();
+    loadingModal.show();
 }
 
 function showErrorDialog(msg) {
@@ -443,9 +442,8 @@ function beginUI() {
     }
 
     // Rendering code on success
-    hideDialog();
-    // Show the help modal
-    new bootstrap.Modal(document.getElementById("help-modal"), {}).show();
+    loadingModal.hide();    // Hide the loading modal
+    new bootstrap.Modal(document.getElementById("help-modal"), {}).show();  // Show the help modal
     populateStateDropdown();
 }
 
@@ -457,6 +455,9 @@ function init() {
         backdrop: "static",
         focus: true,
         keyboard: true
+    });
+    loadingModal = new bootstrap.Modal(document.getElementById("loading-modal"), {
+        backdrop: "static"
     });
     showLoadingDialog();
 
