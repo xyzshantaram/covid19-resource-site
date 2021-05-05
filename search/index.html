@@ -1,0 +1,171 @@
+<html>
+
+<head>
+    <title>COVID-19 Resources</title>
+    <link rel="stylesheet" href="/style.css">
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/1d39151f79.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <!-- Analytics -->
+    <img src="https://shantaram.goatcounter.com/count?p=/search/">
+</head>
+
+<body class='min-vh-100 d-flex flex-column h-100'>
+    <script src='/utils.js'></script>
+    <script src='/search/main.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <div id="reusable-modal" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" id='modal-content-wrapper'>
+                <div id="reusable-modal-header" class="modal-header"></div>
+                <div id="reusable-modal-content" class="modal-body"></div>
+                <div id="reusable-modal-footer" class='modal-footer' id='modal-footer'></div>
+            </div>
+        </div>
+    </div>
+    <div id="help-modal" class="modal" tabindex="-1">
+        <!--Modal to show initially helpful information and credits-->
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" id='modal-content-wrapper'>
+                <div class="modal-header">
+                    Information
+                </div>
+                <div class="modal-body">
+                    <i class="fas fa-exclamation-circle fs-4 mt-1 mb-1"></i>
+                    <div>Welcome to covid.resources.india's official website.</div>
+                    <div>
+                        How to use:
+                        <ol>
+                            <li>Select a state using the dropdown box.</li>
+                            <li>Click one of the resource buttons to view leads for that resource in that state.</li>
+                            <li>Verified resources have a green badge at the bottom, and have been verified by our
+                                volunteers.</li>
+                            <li>Unverified resources have not been verified yet, but still have a chance of working.
+                            </li>
+                        </ol>
+                    </div>
+                    <div>Check out our:
+                        <ul>
+                            <li><a href='https://instagram.com/covid.resources.india'>Instagram page</a></li>
+                            <li><a href='https://linktr.ee/Eccentric.Blue'>LinkTree</a></li>
+                            <li><a href='#'>Twitter page</a></li>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <a href='https://github.com/shantaram3013/covid19-resource-site/issues'>Report bugs</a>
+                        to <a href='https://github.com/shantaram3013/covid19-resource-site'>GitHub.</a>
+                    </div>
+                    <div>
+                        This site and the data it displays is collected and maintained by volunteers.
+                        <a href='https://www.instagram.com/covid.resources.india/'>
+                            Click here for information on volunteering.
+                        </a>
+                    </div>
+                </div>
+                <div class='modal-footer'>
+                    <div>
+                        Made with <i class="fas fa-heart"></i> by <a href='https://github.com/dakshsethi'>Daksh
+                            Sethi</a>,
+                        <a href='https://github.com/kinshukdua'>Kinshuk Dua</a>,
+                        <a href='https://github.com/Krishna-Sivakumar'>Krishna Sivakumar</a>,
+                        and <a href='https://github.com/shantaram3013'>Siddharth Singh</a>
+                    </div>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" aria-label="close">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="loading-modal" class="modal" data-bs-backdrop="static" tabindex="-1">
+        <!--Modal to signify a loading state. Has a spinning wheel.-->
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" id='modal-content-wrapper'>
+                <div class="container-fluid d-flex align-items-center">
+                    <img src="/assets/Spinner-1s-200px.svg" width="20%" id='loading-spinner'>
+                    <div class="modal-body">
+                        Loading
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <nav class="navbar navbar-dark bg-dark mb-3">
+        <div class="container-fluid d-flex align-items-center px-3 py-2">
+            <a class="navbar-brand">COVID RESOURCES INDIA</a>
+            <div id='button-wrapper'>
+                <button class="btn btn-outline-success" type="button" id='info-button' data-bs-toggle="modal" data-bs-target="#help-modal">Help/About</button>
+                <button class="btn btn-outline-warning" type="button" id='refresh-button'>Refresh Data</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <div class="accordion" id="filterAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        Filters
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+
+                        <div class="row d-flex">
+                            <!-- For States -->
+                            <div class="form-group mb-3" id='state-group'>
+                                <label for="states-dropdown" class="mb-2">Select State: </label>
+                                <select id="states-dropdown" class="form-select" aria-label="Select a state">
+                                    <option selected>---</option>
+                                </select>
+                            </div>
+
+                            <!-- Resources -->
+                            <div class="form-group mb-3" id='resource-group'>
+                                <div id="resources">
+                                    <div class="d-flex flex-wrap" id="essential-resources"></div>
+                                    <div class="d-flex flex-wrap" id="other-resources"></div>
+                                </div>
+                            </div>
+
+                            <!-- For Cities -->
+                            <div class="form-group" id='cities-group'>
+                                <label for="cities-dropdown" class="mb-2">Select City: </label>
+                                <select id="cities-dropdown" class="form-select" aria-label="Select a city">
+                                    <option selected>---</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container p-3 mt-2 mb-5">
+
+        <label for="information" class='font-weight-bold fs-5'>Resource list</label>
+        <div id="information" class='row'>
+        </div>
+    </div>
+
+    <footer class="mt-auto">
+        <div class='container-fluid bg-dark text-light px-3 py-2 w-100 text-center'>
+            Disclaimer: All information here is collected and presented by volunteers. Use at your own risk.
+        </div>
+    </footer>
+</body>
+
+
+</html>

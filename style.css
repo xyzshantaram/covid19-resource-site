@@ -22,10 +22,6 @@
     max-width: 65%;
 }
 
-.svg {
-    margin-right: 15px;
-}
-
 .resource-btn {
     font-size: 0.85em !important;
     padding: 0.25em !important;
@@ -52,4 +48,47 @@
 
 #cities-group {
     display: none;
+}
+
+.landing-body section {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.banner img {
+    object-fit: none;
+    /* Do not scale the image */
+    object-position: center;
+    /* Center the image within the element */
+    width: 100%;
+    max-height: 90vh;
+    margin-top: 0;
+}
+
+.banner .banner-text {
+    position: absolute;
+    top: calc(100% - 2em);
+    left: 10px;
+    font-size: 2em;
+}
+
+.card-body>*>img {
+    width: auto;
+    max-height: 40vh;
+    object-position: center;
+}
+
+@media only screen and (max-width: 600px) {
+    .banner .banner-text {
+        top: calc(100% - 3em);
+    }
+}
+
+#blurb>* {
+    max-width: 65vw;
+}
+
+#blurb {
+    max-width: 65vw;
 }
