@@ -2,6 +2,10 @@
     font-family: "Roboto Slab", serif;
 }
 
+.landing-body {
+    background: #f4f7f6;
+}
+
 .card {
     border-radius: .5em !important;
     margin: 10px;
@@ -99,4 +103,8 @@
     #blurb>* {
         max-width: 95vw;
     }
+}
+
+.landing .card {
+    background-color: #cccccc;
 }
