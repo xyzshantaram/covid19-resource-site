@@ -201,10 +201,10 @@ function renderButtons(resources) {
         resource = resource.trim();
         let essentialResource = ['Oxygen', 'Plasma', 'Beds', 'Ambulance'];
         if (essentialResource.includes(resource)) {
-            button.classList.add('essentialButton');
             essential.appendChild(button);
-        } else
+        } else {
             other.appendChild(button);
+        }
     });
 }
 
@@ -436,6 +436,11 @@ function setModalContent(content, eltString, header, isDismissable, staticBackdr
 }
 
 function init() {
+    document.querySelector("#refresh-button").onclick = function() {
+        localStorage.clear();
+        window.location.reload();
+    }
+
     let resTitle = document.querySelector("label[for='information']");
     setElementStyleProp(resTitle, "display", "none");
 
