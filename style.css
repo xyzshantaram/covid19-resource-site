@@ -79,16 +79,24 @@
     object-position: center;
 }
 
-@media only screen and (max-width: 600px) {
-    .banner .banner-text {
-        top: calc(100% - 3em);
-    }
-}
-
 #blurb>* {
     max-width: 65vw;
 }
 
 #blurb {
     max-width: 65vw;
+}
+
+@media only screen and (max-width: 600px) {
+    .banner .banner-text {
+        top: calc(100% - 3em);
+    }
+
+    #blurb {
+        max-width: 95vw;
+    }
+
+    #blurb>* {
+        max-width: 95vw;
+    }
 }
