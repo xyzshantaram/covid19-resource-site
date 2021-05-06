@@ -91,6 +91,16 @@
     max-width: 65vw;
 }
 
+.landing .card {
+    background-color: #cccccc;
+}
+
+#landing-footer img {
+    max-height: 7vh;
+    margin: 12px;
+    margin-top: 0;
+}
+
 @media only screen and (max-width: 600px) {
     .banner .banner-text {
         top: calc(100% - 3em);
@@ -103,8 +113,12 @@
     #blurb>* {
         max-width: 95vw;
     }
-}
 
-.landing .card {
-    background-color: #cccccc;
+    #landing-footer {
+        flex-direction: column;
+    }
+
+    #landing-footer img {
+        margin: 10px;
+    }
 }
