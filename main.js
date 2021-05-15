@@ -1,51 +1,3 @@
-const App = {
-    statesLoaded: false,
-    data: {
-        resourceData: {}
-    },
-    pollerDelay: 200,
-    master: "https://docs.google.com/spreadsheets/d/16ebrAnBatGm69NTh0o1L8Nlnu4PoqIUfHZ0PtagXFLE/edit#gid=1644224808"
-}
-
-// basic performance class. instantiate it right before performing an action, and call <obj>.log()
-// whenever you want to measure how long the task took.
-// the 'name' parameter provides an optional name by which to identify the task for which
-// performance was just logged.
-// Useful for testing the time taken by a series of tasks at once.
-class Performance {
-    constructor(name) {
-        this.startTime = performance.now();
-        this.name = name;
-    }
-
-    getElapsed() {
-        return performance.now() - this.startTime;
-    }
-
-    log() {
-        let name = this.name;
-        let task = ((str) => {
-            return str ? `Task '${str}'` : `Task`
-        })(name);
-        console.log(`${task} took ${this.getElapsed()}ms to complete`);
-    };
-}
-
-const PAPA_OPTIONS = {
-    header: true,
-    delimiter: ',',
-    newline: '\n',
-    quoteChar: '"',
-    skipEmptyLines: false,
-}
-
-let Modal = undefined
-let loadingModal = undefined // variable declaration for the loading modal
-
-function getSheetID(url) {
-    return url.split("/")[5];
-}
-
 function getFileFromURL(url, sheetName, onSuccess, onErr) {
     let id = getSheetID(url);
     let params = new URLSearchParams(); // magical API to generate the query string for us
@@ -101,61 +53,51 @@ function loadResourceData(resName, callback) {
         throw new Error(e);
     }
 
-    let cached = retrieveCachedIfExists(resName);
-    if (cached) {
-        App.data.resourceData[resName] = cached;
+    if (App.data.resourceData[resName]) {
+        callback(App.data.resourceData[resName]);
+        return;
     } else {
         getFileFromURL(App.master, resName, onResLoadSuccess, onErr);
-    }
 
-    function onResLoadSuccess(data) {
-        let _data = data.text;
-        let parsed = Papa.parse(_data, PAPA_OPTIONS).data;
-        if (parsed) {
-            let final = sortResources(parsed);
-            App.data.resourceData[resName] = final;
-            cacheTimeStampedData(resName, final, 9e5); // 15 minutes
-        } else {
-            onErr("Invalid data received!");
-        }
-    }
-
-    let waits = 0;
-
-    function dataLoadPoller() {
-        if (!App.data.resourceData[resName]) {
-            if (waits > 100) {
-                onErr('Error loading data: timed out');
+        function onResLoadSuccess(data) {
+            let _data = data.text;
+            let parsed = Papa.parse(_data, PAPA_OPTIONS).data;
+            if (parsed) {
+                let final = sortResources(parsed);
+                App.data.resourceData[resName] = final;
+                // cacheTimeStampedData(resName, final, 9e5); // 15 minutes
+                loadingModal.hide();
+                callback(App.data.resourceData[resName]);
             } else {
-                setTimeout(dataLoadPoller, App.pollerDelay);
+                onErr("Invalid data received!");
             }
-            waits += 1;
-            return;
-        } else {
-            callback(App.data.resourceData[resName]);
         }
     }
-
-    setTimeout(dataLoadPoller, App.pollerDelay);
 }
 
 function renderButtons(resources) {
-    console.log(resources);
     let div = document.getElementById("resource-buttons");
     div.innerHTML = '';
 
     resources.sort((x, y) => y.length - x.length).forEach(resource => {
         let button = createElementWithClass(
             "button",
-            "btn btn-primary resource-btn",
+            "btn resource-btn btn-primary",
             resource
         );
 
         button.onclick = function() {
-            loadResourceData(resource, function(data) {
-                renderStateResourceData(data, null, resource);
-                loadingModal.hide();
-            });
+            App.data.selectedResources = App.data.selectedResources || [];
+            this.selected = !this.selected;
+            if (this.selected) {
+                App.data.selectedResources.push(resource);
+                this.classList.add('bg-success', 'text-light');
+            } else {
+                App.data.selectedResources.remove(resource);
+                this.classList.remove('bg-success', 'text-light');
+            }
+            this.blur();
+            onUserInput();
         }
         div.appendChild(button);
     });
@@ -178,41 +120,23 @@ function toggleElementDisplay(selector) {
 function renderCard(obj) {
     if (obj.Verified && obj.Verified.toLocaleLowerCase() === "no") return;
     let container = document.getElementById("information");
-
-    let normaliser = {
-        entity: {
-            elem: '',
-            list: ['name', 'contact person name', 'company', 'entity', 'company name', 'contact name'],
-            icon: '<i class="fas fa-user-friends"></i>',
-            class: `fs-5 text-wrap d-inline`
-        },
-        phone: {
-            elem: '',
-            list: ['number', 'contact number', 'phone'],
-            icon: '<i class="fas fa-phone"></i>',
-        },
-        place: {
-            elem: '',
-            list: ['area', 'city', 'zone'],
-            icon: '<i class="fas fa-map-marker-alt"></i>',
-        },
-        comment: {
-            elem: '',
-            list: ['status', 'comment', 'remarks'],
-            icon: '<i class="fas fa-comment"></i>',
-        },
-    }
-
     let final = [];
     let normalised = {};
 
     for (let key in obj) {
-        if (key === "Verified") continue;
+        if ((/.*(verified)|(timestamp).*/i).test(key)) continue;
         if (!Boolean(key) || !Boolean(obj[key])) continue;
         if (!Boolean(key.trim()) || !Boolean(obj[key].trim())) continue;
 
+        if ((/.*type of service.*/i).test(key)) {
+            final.unshift({
+                icon: true,
+                str: `<div><div class='badge bg-primary w-auto'>${obj[key]}</div></div>`
+            });
+        };
+
         for (let category in normaliser) {
-            if (normaliser[category].list.includes(key.toLowerCase())) {
+            if (normaliser[category].re.test(key)) {
                 normaliser[category].value = obj[key];
                 normalised[key] = category;
             }
@@ -228,7 +152,7 @@ function renderCard(obj) {
                 v: v,
                 icon: Boolean(icon),
                 str: `<div style='width: 100%; text-align: left;' class='m-1'>
-                <div class="${getClass()}" style='font-weight: 500'> ${icon ? icon : k} </div>
+                <div class="${getClass()}" style='font-weight: 600'> ${icon ? icon : k} </div>
             <div class="${getClass()}" style='font-weight: 400'> ${v} </div> </div>`
             }
         }
@@ -262,17 +186,17 @@ function renderCard(obj) {
             Verified
         </div>`;
     } else {
-        statusElements.header =
-            `<div class="card-header text-center rounded-top bg-${status} text-white">
+        statusElements.footer =
+            `<div class="card-header text-center rounded-bottom bg-${status}">
             This lead is unverified. Information potentially incorrect; use at your own risk!
         </div>`;
     }
 
     let cardGen =
         `
-            <div class="card h-100 ml-2 mt-4 alert-${status}">
+            <div class="card h-100 ml-2 mt-4 alert-${status} shadow">
                 ${statusElements.header}
-                <div class="card-body pb-2">
+                <div class="card-body bg-gradient">
                     <div class="d-flex flex-column">
                         ${final.join("\n")}
                     </div>
@@ -306,81 +230,65 @@ function onStateDropdownChange() {
     let waits = 0;
 
     if (dropdownValue !== "[Select a state]") {
-        showInfoDialog('todo: state filtering');
+        App.data.state = dropdownValue;
     } else {
-        setElementStyleProp(document.querySelector("label[for='information']"), "display", "none");
+        App.data.state = null;
     }
+    onUserInput();
 }
 
 function renderStateResourceData(list, stateName, resName) {
     // renders cards
+    loadingModal.show();
     let perf = new Performance(`render ${resName} data for ${stateName}`);
     let container = document.getElementById("information");
     let title = document.querySelector("label[for='information']");
-    if (stateName && resName) {
-        title.innerHTML = `Resource list: ${resName} in ${stateName}`;
-        setElementStyleProp(title, "display", "block");
-    } else if (resName) {
-        title.innerHTML = `Resource list: ${resName}`;
-        setElementStyleProp(title, "display", "block");
-    } else {
-
-    }
+    title.innerHTML = `${resName} in ${stateName}`;
+    setElementStyleProp(title, "display", "block");
     container.innerHTML = "";
 
     list.forEach(item => {
         renderCard(item)
     })
     perf.log();
+    loadingModal.hide();
 }
 
-function showLoadingDialog() {
-    // Shows the loading modal
-    loadingModal.show();
+function onUserInput() {
+    let submit = document.getElementById('submit-button');
+    submit.disabled = !((App.data.selectedResources && App.data.selectedResources !== []) && App.data.state);
+    return submit.disabled;
 }
 
-function showErrorDialog(msg) {
-    setModalContent(msg, `<i class="fas fa-exclamation-triangle fs-4 mt-1 mb-1"></i>`, "Error", false);
-    Modal.show();
-}
+function submitButtonHandler() {
+    let finalResources = []
+    let resources = App.data.selectedResources;
+    let length = resources.length;
+    let loadedCount = 0;
+    let attempts = 0;
+    let nextCalled = false;
 
-function setModalContent(content, eltString, header, isDismissable, staticBackdrop) {
-    /*
-    Sets the content of the reusable modal
-    content:        content of the modal's body
-    eltString:      (don't know what this does yet... Whoever knows add it in)
-    header:         content of the modal's header
-    isDismissable:  renders a close button if the modal is closable
-    staticBackdrop: makes the modal's backdrop static if true
-    */
-
-    // Checking if the arguments are undefined and setting the contents to empty strings, if so
-    header = header ? header : ""
-    content = content ? content : ""
-    eltString = eltString ? eltString : ""
-
-    // Setting the modal's contents here
-    document.getElementById("reusable-modal-header").innerHTML = header
-    document.getElementById("reusable-modal-content").innerHTML = `${eltString} ${content}`
-    if (isDismissable) {
-        document.getElementById("reusable-modal-footer").innerHTML = `<button class="btn btn-secondary" data-bs-dismiss="modal" aria-label="close">Close</button>`;
+    function next() {
+        loadingModal.hide();
+        let res = finalResources.flat(1).filter((o) => (o["Service Provider State"] == App.data.state));
+        let resName = resources.join(", ");
+        renderStateResourceData(res, App.data.state, resName);
     }
-
-    // Overwriting the old modal object with a new one
-    Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {
-        static: staticBackdrop ? "static" : ""
-    })
+    let callback = function(d) {
+        finalResources.push(d);
+        loadedCount += 1;
+        if (loadedCount === length && !nextCalled) {
+            nextCalled = true;
+            next();
+        }
+    }
+    for (let x of resources) {
+        attempts += 1;
+        loadResourceData(x, callback);
+    }
 }
 
 function init() {
-    document.querySelector("#refresh-button").onclick = function() {
-        localStorage.clear();
-        window.location.reload();
-    }
-
-    let resTitle = document.querySelector("label[for='information']");
-    setElementStyleProp(resTitle, "display", "none");
-
     // Instantiate a reusable modal
     Modal = new bootstrap.Modal(document.getElementById("reusable-modal"), {});
 
@@ -389,7 +297,13 @@ function init() {
         backdrop: "static" // Note: setting data-bs-backdrop on the modal div doesn't work
     });
 
-    showLoadingDialog();
+    loadingModal.show();
+    let submit = document.getElementById('submit-button');
+    submit.disabled = true;
+    submit.onclick = submitButtonHandler;
+
+    let resTitle = document.querySelector("label[for='information']");
+    setElementStyleProp(resTitle, "display", "none");
 
     document.querySelector("#states-dropdown").onchange = onStateDropdownChange;
 
@@ -403,47 +317,23 @@ function init() {
         }
     }
 
-    let cached = retrieveCachedIfExists('master-index');
-    if (cached) {
-        App.masterLoaded = true;
-        App.data.resourceList = cached;
-    } else {
-        function onGetMasterSuccess(data) {
-            if (data.status === "OK") {
-                let resourceList = [] // list of resources
-                let resData = Papa.parse(data.text, PAPA_OPTIONS).data;
-                for (let item of resData) {
-                    resourceList.push(item.Category);
-                }
-                App.data.resourceList = resourceList;
-                App.masterLoaded = true;
-                cacheTimeStampedData("master-index", resourceList);
-            } else {
-                showErrorDialog(`Loading master sheet failed failed with error ${data.status}`);
-                throw new Error(`Loading master sheet failed failed with error ${data.status}`);
+    function onGetMasterSuccess(data) {
+        if (data.status === "OK") {
+            let resourceList = [] // list of resources
+            let resData = Papa.parse(data.text, PAPA_OPTIONS).data;
+            for (let item of resData) {
+                resourceList.push(item.Category);
             }
-        }
-        getFileFromURL(App.master, "Index", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
-    }
-    let waits = 0;
-
-    function masterLoadPoller() {
-        waits++;
-        if (waits > 100) {
-            showErrorDialog('Loading failed for master resource list: timed out.');
-            throw new Error('Timed out loading master sheet');
-        }
-        if (App.masterLoaded) {
+            App.masterLoaded = true;
             populateStateDropdown();
-            renderButtons(App.data.resourceList);
+            renderButtons(resourceList);
             loadingModal.hide();
-            // new bootstrap.Modal(document.getElementById("help-modal"), {}).show(); // Show the help modal
         } else {
-            setTimeout(masterLoadPoller, App.pollerDelay);
+            showErrorDialog(`Loading master sheet failed failed with error ${data.status}`);
+            throw new Error(`Loading master sheet failed failed with error ${data.status}`);
         }
     }
-
-    setTimeout(masterLoadPoller, App.pollerDelay);
+    getFileFromURL(App.master, "Index", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
 }
 
 window.onload = init;
