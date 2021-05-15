@@ -187,7 +187,7 @@ function renderButtons(resources) {
 
         button.onclick = function() {
             let selectedState = document.getElementById("states-dropdown").value;
-            if (selectedState === "---") return;
+            if (selectedState === "[Select a state]") return;
             showLoadingDialog();
 
             function onResLoadSuccess(data) {
@@ -338,7 +338,7 @@ function renderCard(obj) {
 function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
     let statesDropdown = document.getElementById("states-dropdown");
-    statesDropdown.innerHTML = "<option>---</option>"; // Initialize dropdown with a placeholder value
+    statesDropdown.innerHTML = "<option>[Select a state]</option>"; // Initialize dropdown with a placeholder value
     Object.keys(App.data.stateLinks).forEach(element => {
         // Creates an option tag for each state in the stateIndices array
         let state = element.split('-')[0];
@@ -353,7 +353,7 @@ function onStateDropdownChange() {
     let dropdownValue = document.getElementById("states-dropdown").value;
     let waits = 0;
 
-    if (dropdownValue !== "---") {
+    if (dropdownValue !== "[Select a state]") {
         showLoadingDialog();
         loadStateIndex(dropdownValue);
 
@@ -495,7 +495,7 @@ function init() {
         if (App.statesLoaded) {
             initialiseStates();
             loadingModal.hide();
-            new bootstrap.Modal(document.getElementById("help-modal"), {}).show(); // Show the help modal
+            // new bootstrap.Modal(document.getElementById("help-modal"), {}).show(); // Show the help modal
             populateStateDropdown();
         } else {
             setTimeout(stateLoadPoller, App.pollerDelay);
