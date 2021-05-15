@@ -35,23 +35,10 @@
     filter: saturate(0.65) !important;
 }
 
-.essentialButton {
-    background-color: red !important;
-    border-color: red !important;
-}
-
 @media screen and (max-width: 600px) {
     .container {
         max-width: 90%;
     }
-}
-
-#resource-group {
-    display: none;
-}
-
-#cities-group {
-    display: none;
 }
 
 .landing-body section {

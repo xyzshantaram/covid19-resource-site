@@ -1,12 +1,10 @@
 const App = {
     statesLoaded: false,
-    loadedStateIndicesCount: 0,
     data: {
-        stateLinks: {},
-        stateIndices: {},
-        stateResources: {}
+        resourceData: {}
     },
-    pollerDelay: 200
+    pollerDelay: 200,
+    master: "https://docs.google.com/spreadsheets/d/16ebrAnBatGm69NTh0o1L8Nlnu4PoqIUfHZ0PtagXFLE/edit#gid=1644224808"
 }
 
 // basic performance class. instantiate it right before performing an action, and call <obj>.log()
@@ -67,101 +65,23 @@ function getFileFromURL(url, sheetName, onSuccess, onErr) {
         loadTime.log();
     }).catch((error) => {
         console.error('Error:', error);
-        if (onErr) onErr(err);
+        if (onErr) onErr(error);
     });
 }
 
-function loadStateIndex(stateName) {
-    if (!App.statesLoaded || !App.data.stateLinks) {
-        return;
-    }
-    let stateResourceList = [];
-    let cached = retrieveCachedIfExists(`${stateName}-index`);
-
-    if (cached) {
-        App.loadedStateIndicesCount += 1;
-        App.data.stateIndices[`${stateName}`] = cached;
-    } else {
-        function onGetIndexSuccess(data) {
-            if (data.status === "OK") {
-                let rehydratedData = Papa.parse(data.text, PAPA_OPTIONS).data;
-                stateResourceList = rehydratedData.map(
-                    categoryItems => categoryItems["Category"] // Move the array up from the nested category field
-                ).filter(Boolean).filter(word => word.trim().length > 0) // Check if the resource is empty or undefined
-                App.data.stateIndices[stateName] = stateResourceList;
-                cacheTimeStampedData(`${stateName}-index`, stateResourceList, 150e3);
-            } else {
-                throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
-            }
+function sortResources(res) {
+    let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
+    res.sort(function(a, b) {
+        if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
+            return 1;
         }
-        getFileFromURL(App.data.stateLinks[stateName], "Index", onGetIndexSuccess);
-    }
-}
-
-function loadStateResource(stateName, resName, onLoadSuccess) {
-    let value = null;
-    let waits = 0;
-
-    if (App.data.stateResources[stateName][resName]) {
-        value = App.data.stateResources[stateName][resName];
-        if (onLoadSuccess) onLoadSuccess(value);
-        return;
-    }
-
-    if (!App.statesLoaded) {
-        return;
-    }
-
-    if (!(stateName in App.data.stateIndices)) {
-        throw new Error(`State ${stateName} does not exist`);
-    }
-
-    if (!(App.data.stateIndices[stateName].includes(resName.trim()))) {
-        throw new Error(`Resource ${resName} not present for state ${stateName}`);
-    }
-
-    function resourceLoadPoller() {
-        if (!value) {
-            if (waits > 100) {
-                throw new Error(`Loading sheet for ${stateName} failed: Timed out.`);
-            }
-            setTimeout(resourceLoadPoller, App.pollerDelay);
-            waits += 1;
-        } else {
-            let isInvalid = (item) => !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
-            value.sort(function(a, b) {
-                if (isInvalid(a.Verified) && !isInvalid(b.Verified)) {
-                    return 1;
-                }
-                if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
-                    return -1;
-                }
-                return 0;
-            });
-            if (onLoadSuccess) {
-                onLoadSuccess(value);
-            }
+        if (!isInvalid(a.Verified) && isInvalid(b.Verified)) {
+            return -1;
         }
-    }
+        return 0;
+    });
 
-    function onGetResourceSuccess(data) {
-        if (data.status === "OK") {
-            value = Papa.parse(data.text, PAPA_OPTIONS).data;
-            App.data.stateResources[stateName][resName] = value;
-        } else {
-            throw new Error(`Loading sheet for ${stateName} failed with error details:\n${JSON.stringify(data, null, 4)}`);
-        }
-    }
-
-    getFileFromURL(App.data.stateLinks[stateName], resName, onGetResourceSuccess);
-    setTimeout(resourceLoadPoller, App.pollerDelay);
-}
-
-function initialiseStates() {
-    let states = Object.keys(App.data.stateLinks);
-    for (let x of states) {
-        App.data.stateResources[x] = {};
-    }
+    return res;
 }
 
 function createElementWithClass(type, class_name, text, style) {
@@ -172,11 +92,57 @@ function createElementWithClass(type, class_name, text, style) {
     return element;
 }
 
+function loadResourceData(resName, callback) {
+    loadingModal.show();
+
+    function onErr(e) {
+        loadingModal.hide();
+        showErrorDialog(e);
+        throw new Error(e);
+    }
+
+    let cached = retrieveCachedIfExists(resName);
+    if (cached) {
+        App.data.resourceData[resName] = cached;
+    } else {
+        getFileFromURL(App.master, resName, onResLoadSuccess, onErr);
+    }
+
+    function onResLoadSuccess(data) {
+        let _data = data.text;
+        let parsed = Papa.parse(_data, PAPA_OPTIONS).data;
+        if (parsed) {
+            let final = sortResources(parsed);
+            App.data.resourceData[resName] = final;
+            cacheTimeStampedData(resName, final, 9e5); // 15 minutes
+        } else {
+            onErr("Invalid data received!");
+        }
+    }
+
+    let waits = 0;
+
+    function dataLoadPoller() {
+        if (!App.data.resourceData[resName]) {
+            if (waits > 100) {
+                onErr('Error loading data: timed out');
+            } else {
+                setTimeout(dataLoadPoller, App.pollerDelay);
+            }
+            waits += 1;
+            return;
+        } else {
+            callback(App.data.resourceData[resName]);
+        }
+    }
+
+    setTimeout(dataLoadPoller, App.pollerDelay);
+}
+
 function renderButtons(resources) {
-    let essential = document.getElementById("essential-resources");
-    let other = document.getElementById("other-resources");
-    essential.textContent = "";
-    other.textContent = "";
+    console.log(resources);
+    let div = document.getElementById("resource-buttons");
+    div.innerHTML = '';
 
     resources.sort((x, y) => y.length - x.length).forEach(resource => {
         let button = createElementWithClass(
@@ -186,25 +152,12 @@ function renderButtons(resources) {
         );
 
         button.onclick = function() {
-            let selectedState = document.getElementById("states-dropdown").value;
-            if (selectedState === "[Select a state]") return;
-            showLoadingDialog();
-
-            function onResLoadSuccess(data) {
-                renderStateResourceData(data, selectedState, resource);
+            loadResourceData(resource, function(data) {
+                renderStateResourceData(data, null, resource);
                 loadingModal.hide();
-            }
-
-            loadStateResource(selectedState, resource, onResLoadSuccess);
+            });
         }
-
-        resource = resource.trim();
-        let essentialResource = ['Oxygen', 'Plasma', 'Beds', 'Ambulance'];
-        if (essentialResource.includes(resource)) {
-            essential.appendChild(button);
-        } else {
-            other.appendChild(button);
-        }
+        div.appendChild(button);
     });
 }
 
@@ -339,11 +292,10 @@ function populateStateDropdown() {
     // Inserts State Options into the states dropdown at the start of the page
     let statesDropdown = document.getElementById("states-dropdown");
     statesDropdown.innerHTML = "<option>[Select a state]</option>"; // Initialize dropdown with a placeholder value
-    Object.keys(App.data.stateLinks).forEach(element => {
-        // Creates an option tag for each state in the stateIndices array
-        let state = element.split('-')[0];
+    (states).forEach(element => {
+        // Creates an option tag for each state in the states array
         let option = document.createElement("option");
-        option.innerText = state;
+        option.innerText = element;
         statesDropdown.appendChild(option);
     })
 }
@@ -354,31 +306,9 @@ function onStateDropdownChange() {
     let waits = 0;
 
     if (dropdownValue !== "[Select a state]") {
-        showLoadingDialog();
-        loadStateIndex(dropdownValue);
-
-        function indexLoadPoller() {
-            if (!App.data.stateIndices[dropdownValue]) {
-                if (waits > 100) {
-                    throw new Error("Error loading state index: timed out");
-                } else {
-                    setTimeout(indexLoadPoller, App.pollerDelay);
-                }
-                waits += 1;
-                return;
-            } else {
-                let container = document.getElementById("information");
-                let title = document.querySelector("label[for='information']");
-                setElementStyleProp(title, "display", "none");
-                container.innerHTML = "";
-                setElementStyleProp(document.querySelector("#resource-group"), "display", "block");
-                renderButtons(App.data.stateIndices[dropdownValue]);
-                loadingModal.hide();
-            }
-        }
-        setTimeout(indexLoadPoller, App.pollerDelay);
+        showInfoDialog('todo: state filtering');
     } else {
-        setElementStyleProp(document.querySelector("#resource-group"), "display", "none");
+        setElementStyleProp(document.querySelector("label[for='information']"), "display", "none");
     }
 }
 
@@ -387,8 +317,15 @@ function renderStateResourceData(list, stateName, resName) {
     let perf = new Performance(`render ${resName} data for ${stateName}`);
     let container = document.getElementById("information");
     let title = document.querySelector("label[for='information']");
-    setElementStyleProp(title, "display", "block");
-    title.innerHTML = `Resource list: ${resName} in ${stateName}`;
+    if (stateName && resName) {
+        title.innerHTML = `Resource list: ${resName} in ${stateName}`;
+        setElementStyleProp(title, "display", "block");
+    } else if (resName) {
+        title.innerHTML = `Resource list: ${resName}`;
+        setElementStyleProp(title, "display", "block");
+    } else {
+
+    }
     container.innerHTML = "";
 
     list.forEach(item => {
@@ -466,43 +403,47 @@ function init() {
         }
     }
 
-    const master = "https://docs.google.com/spreadsheets/d/1XxvTvvRsIjkf4dfAZBAIEMm7sTYeiwngHHnl_3eNwk8/edit";
-
-    let cached = retrieveCachedIfExists('state-links');
+    let cached = retrieveCachedIfExists('master-index');
     if (cached) {
-        App.statesLoaded = true;
-        App.data.stateLinks = cached;
+        App.masterLoaded = true;
+        App.data.resourceList = cached;
     } else {
         function onGetMasterSuccess(data) {
             if (data.status === "OK") {
-                let stateDict = {} // mapping of states to links. the return value of your dropdown can be used to index this
-                let states = Papa.parse(data.text, PAPA_OPTIONS).data;
-                for (let state of states) {
-                    stateDict[state.Place] = state.Link;
+                let resourceList = [] // list of resources
+                let resData = Papa.parse(data.text, PAPA_OPTIONS).data;
+                for (let item of resData) {
+                    resourceList.push(item.Category);
                 }
-
-                App.data.stateLinks = stateDict;
-                App.statesLoaded = true;
-                cacheTimeStampedData("state-links", stateDict);
+                App.data.resourceList = resourceList;
+                App.masterLoaded = true;
+                cacheTimeStampedData("master-index", resourceList);
             } else {
+                showErrorDialog(`Loading master sheet failed failed with error ${data.status}`);
                 throw new Error(`Loading master sheet failed failed with error ${data.status}`);
             }
         }
-        getFileFromURL(master, "State wise links", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
+        getFileFromURL(App.master, "Index", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
     }
+    let waits = 0;
 
-    function stateLoadPoller() {
-        if (App.statesLoaded) {
-            initialiseStates();
+    function masterLoadPoller() {
+        waits++;
+        if (waits > 100) {
+            showErrorDialog('Loading failed for master resource list: timed out.');
+            throw new Error('Timed out loading master sheet');
+        }
+        if (App.masterLoaded) {
+            populateStateDropdown();
+            renderButtons(App.data.resourceList);
             loadingModal.hide();
             // new bootstrap.Modal(document.getElementById("help-modal"), {}).show(); // Show the help modal
-            populateStateDropdown();
         } else {
-            setTimeout(stateLoadPoller, App.pollerDelay);
+            setTimeout(masterLoadPoller, App.pollerDelay);
         }
     }
 
-    setTimeout(stateLoadPoller, App.pollerDelay);
+    setTimeout(masterLoadPoller, App.pollerDelay);
 }
 
 window.onload = init;
