@@ -132,6 +132,11 @@ function showInfoDialog(message) {
     Modal.show();
 }
 
+let isUnverified = (_item) => {
+    let item = _item.Verified;
+    return !(Boolean(item) && Boolean(item.trim())) || item.trim().toLocaleLowerCase() === "retry";
+}
+
 let states = [
     "Pan India",
     "Andaman and Nicobar Islands",

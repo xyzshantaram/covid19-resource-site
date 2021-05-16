@@ -51,13 +51,31 @@ body>.container {
     font-size: 0.8em;
 }
 
-@media only screen and (max-width: 600px) {
-    body>.container {
-        max-width: max-content;
+label[for='information'] {
+    font-weight: 600;
+}
+
+#copy-alert {
+    opacity: 0;
+    width: 20vw;
+    height: 10vh;
+    position: fixed;
+    z-index: 2000;
+    bottom: 1em;
+    right: 1em;
+}
+
+@keyframes fadein {
+    0% {
+        opacity: 0;
     }
 
-    .display-font {
-        font-size: 1.5em;
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
     }
 }
 
@@ -65,5 +83,31 @@ body>.container {
     .btn:hover {
         background: #198754;
         color: #f8f9fa;
+    }
+}
+
+@media only screen and (max-aspect-ratio: 1/1) {
+    body>.container {
+        max-width: max-content;
+    }
+
+    .display-font {
+        font-size: 1.5em;
+    }
+
+    #copy-alert {
+        opacity: 0;
+        max-width: 100%;
+        max-height: 100%;
+        min-width: 90%;
+        min-height: 10%;
+        width: 90%;
+        height: 10%;
+        position: fixed;
+        z-index: 2000;
+        bottom: 1em;
+        right: 5%;
+        left: 5%;
+        bottom: 2%;
     }
 }

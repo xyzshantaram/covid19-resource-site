@@ -11,8 +11,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1d39151f79.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -136,10 +136,10 @@
     </div>
 
     <div class="container mt-3 d-flex justify-content-center">
-        <div class="row d-flex w-100 px-1">
+        <div class="row d-flex w-100">
             <!-- Resources -->
             <div class="form-group mb-3" id='resource-group'>
-                <label for='resources'>What resource are you looking for?</label>
+                <label for='resources'>Select the resources you want to view:</label>
                 <div id="resources">
                     <div class="d-flex flex-wrap" id="resource-buttons"></div>
                 </div>
@@ -150,15 +150,18 @@
                 <select id="states-dropdown" class="form-select" aria-label="Select a state">
                 </select>
             </div>
-
-            <button class="btn btn-primary" type="button" id='submit-button'>Get help</button>
+            <button class="btn btn-primary font-weight-bold" type="button" id='submit-button' style='font-weight: bold;'>Get help</button>
         </div>
     </div>
 
     <div class="container p-3 mt-2 mb-5">
 
-        <label for="information" class='font-weight-bold fs-5'>Resource list</label>
+        <label for="information" class='font-weight-bold fs-5'></label>
+        <div id='nav-link'>
+
+        </div>
         <div id="information" class='row'>
+
         </div>
     </div>
 
