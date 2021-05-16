@@ -1,5 +1,5 @@
 * {
-    font-family: "Roboto Slab", serif;
+    font-family: "Inter", sans-serif;
 }
 
 .landing-body {
@@ -27,98 +27,87 @@
 }
 
 .resource-btn {
-    font-size: 0.85em !important;
-    padding: 0.25em !important;
-    padding-left: 0.5em !important;
-    padding-right: 0.5em !important;
-    margin: 0.1em !important;
-    filter: saturate(0.65) !important;
+    font-size: 1em !important;
+    padding: 0.1em;
+    margin: 0.1em;
 }
 
-.essentialButton {
-    background-color: red !important;
-    border-color: red !important;
-}
-
-@media screen and (max-width: 600px) {
-    .container {
-        max-width: 90%;
-    }
-}
-
-#resource-group {
-    display: none;
-}
-
-#cities-group {
-    display: none;
-}
-
-.landing-body section {
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}
-
-.banner img {
-    object-fit: none;
-    /* Do not scale the image */
-    object-position: center;
-    /* Center the image within the element */
-    width: 100%;
-    max-height: 90vh;
-    margin-top: 0;
-}
-
-.banner .banner-text {
-    position: absolute;
-    top: calc(100% - 2em);
-    left: 10px;
-    font-size: 2em;
-}
-
-.card-body>*>img {
-    width: auto;
-    max-height: 40vh;
-    object-position: center;
-}
-
-#blurb>* {
-    max-width: 65vw;
-}
-
-#blurb {
-    max-width: 65vw;
-}
-
-.landing .card {
-    background-color: #cccccc;
-}
-
-#landing-footer img {
+.logos img {
     max-height: 7vh;
     margin: 12px;
     margin-top: 0;
 }
 
-@media only screen and (max-width: 600px) {
-    .banner .banner-text {
-        top: calc(100% - 3em);
+body>.container {
+    max-width: 80ch;
+}
+
+.display-font {
+    font-family: 'Staatliches', serif !important;
+    font-size: 2em;
+}
+
+.disclaimer {
+    font-size: 0.8em;
+}
+
+label[for='information'] {
+    font-weight: 600;
+}
+
+#copy-alert {
+    opacity: 0;
+    width: 20vw;
+    height: 10vh;
+    position: fixed;
+    z-index: 2000;
+    bottom: 1em;
+    right: 1em;
+}
+
+@keyframes fadein {
+    0% {
+        opacity: 0;
     }
 
-    #blurb {
-        max-width: 95vw;
+    50% {
+        opacity: 1;
     }
 
-    #blurb>* {
-        max-width: 95vw;
+    100% {
+        opacity: 1;
+    }
+}
+
+@media not all and (hover: none) {
+    .btn:hover {
+        background: #198754;
+        color: #f8f9fa;
+    }
+}
+
+@media only screen and (max-aspect-ratio: 1/1) {
+    body>.container {
+        max-width: max-content;
     }
 
-    #landing-footer {
-        flex-direction: column;
+    .display-font {
+        font-size: 1.5em;
     }
 
-    #landing-footer img {
-        margin: 10px;
+    #copy-alert {
+        opacity: 0;
+        max-width: 100%;
+        max-height: 100%;
+        min-width: 90%;
+        min-height: 10%;
+        width: 90%;
+        height: 10%;
+        position: fixed;
+        z-index: 2000;
+        bottom: 1em;
+        right: 5%;
+        left: 5%;
+        bottom: 2%;
     }
 }

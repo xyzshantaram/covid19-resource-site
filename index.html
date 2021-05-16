@@ -9,15 +9,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1d39151f79.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700;800&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
     <!-- Analytics -->
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-KK51B2KZHJ"></script>
@@ -33,8 +33,6 @@
 </head>
 
 <body class='min-vh-100 d-flex flex-column h-100'>
-    <script src='utils.js'></script>
-    <script src='main.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <div id="reusable-modal" class="modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -58,8 +56,8 @@
                     <div>
                         How to use:
                         <ol>
-                            <li>Select a state using the dropdown box.</li>
-                            <li>Click one of the resource buttons to view leads for that resource in that state.</li>
+                            <li>Select the resources you want to view.</li>
+                            <li>Select the state you want to view leads in, and click "Get help" to view leads.</li>
                             <li>Verified resources have a green badge at the bottom, and have been verified by our
                                 volunteers.</li>
                             <li>Unverified resources have not been verified yet, but still have a chance of working.
@@ -111,70 +109,69 @@
             </div>
         </div>
     </div>
-    <nav class="navbar navbar-dark bg-dark mb-3">
-        <div class="container-fluid d-flex align-items-center px-3 py-2">
-            <a class="navbar-brand">COVID RESOURCES INDIA</a>
+    <nav class="navbar mb-3">
+        <div class="container-fluid d-flex align-items-center">
+            <a class="navbar-brand display-font">
+                <i class="fa fa-compass" aria-hidden="true"></i>
+                COVID RESOURCES INDIA</a>
             <div id='button-wrapper'>
-                <button class="btn btn-outline-success" type="button" id='info-button' data-bs-toggle="modal" data-bs-target="#help-modal">Help/About</button>
-                <button class="btn btn-outline-warning" type="button" id='refresh-button'>Refresh Data</button>
+                <button class="btn btn-outline-primary" type="button" id='info-button' data-bs-toggle="modal" data-bs-target="#help-modal">Help/About</button>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-3">
-        <div class="accordion" id="filterAccordion">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingOne">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        Filters
-                    </button>
-                </h2>
-                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                    <div class="accordion-body">
+    <div class='container mt-1'>
+        Powered by an army of selfless volunteers helping you find resources across India. Reach us on Instagram, Facebook, and Twitter.
+        <div class='fs-1 d-flex justify-content-center my-1'>
+            <a class='m-2' href='#'><i class="fa fa-instagram"></i></a>
+            <a class='m-2' href='#'><i class="fa fa-facebook-square"></i></a>
+            <a class='m-2' href='#'><i class="fa fa-twitter"></i></a>
+        </div>
+    </div>
 
-                        <div class="row d-flex">
-                            <!-- For States -->
-                            <div class="form-group mb-3" id='state-group'>
-                                <label for="states-dropdown" class="mb-2">State: </label>
-                                <select id="states-dropdown" class="form-select" aria-label="Select a state">
-                                    <option selected>---</option>
-                                </select>
-                            </div>
+    <div class='container d-flex w-100 justify-content-center'>
+        <div class='display-font'>
+            Resource Finder
+        </div>
+    </div>
 
-                            <!-- Resources -->
-                            <div class="form-group mb-3" id='resource-group'>
-                                <div id="resources">
-                                    <div class="d-flex flex-wrap" id="essential-resources"></div>
-                                    <div class="d-flex flex-wrap" id="other-resources"></div>
-                                </div>
-                            </div>
-
-                            <!-- For Cities -->
-                            <div class="form-group" id='cities-group'>
-                                <label for="cities-dropdown" class="mb-2">Select City: </label>
-                                <select id="cities-dropdown" class="form-select" aria-label="Select a city">
-                                    <option selected>---</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+    <div class="container mt-3 d-flex justify-content-center">
+        <div class="row d-flex w-100">
+            <!-- Resources -->
+            <div class="form-group mb-3" id='resource-group'>
+                <label for='resources'>Select the resources you want to view:</label>
+                <div id="resources">
+                    <div class="d-flex flex-wrap" id="resource-buttons"></div>
                 </div>
             </div>
+            <!-- For States -->
+            <div class="form-group mb-3" id='state-group'>
+                <label for="states-dropdown" class="mb-2">Select State: </label>
+                <select id="states-dropdown" class="form-select" aria-label="Select a state">
+                </select>
+            </div>
+            <button class="btn btn-primary font-weight-bold" type="button" id='submit-button' style='font-weight: bold;'>Get help</button>
         </div>
     </div>
 
     <div class="container p-3 mt-2 mb-5">
 
-        <label for="information" class='font-weight-bold fs-5'>Resource list</label>
+        <label for="information" class='font-weight-bold fs-5'></label>
+        <div id='nav-link'>
+
+        </div>
         <div id="information" class='row'>
+
         </div>
     </div>
 
     <footer class="mt-auto">
-        <div class='container-fluid bg-dark text-light px-3 py-2 w-100 text-center'>
+        <div class='disclaimer container-fluid text-primary px-3 py-2 w-100 text-center'>
             Disclaimer: All information here is collected and presented by volunteers. Use at your own risk.
         </div>
     </footer>
+    <script src='utils.js'></script>
+    <script src='main.js'></script>
 </body>
 
 
