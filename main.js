@@ -79,7 +79,7 @@ function renderButtons(resources) {
     let div = document.getElementById("resource-buttons");
     div.innerHTML = '';
 
-    resources.sort((x, y) => y.length - x.length).forEach(resource => {
+    resources.forEach(resource => {
         let button = createElementWithClass(
             "button",
             "btn resource-btn btn-primary",
