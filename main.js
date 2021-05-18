@@ -190,7 +190,7 @@ function renderCard(obj) {
 
 
     for (let key in obj) {
-        if ((/.*(verified)|(timestamp).*/i).test(key)) continue;
+        if ((/.*(verified)|(timestamp)|(service provider state).*/i).test(key)) continue;
         if (!Boolean(key) || !Boolean(obj[key])) continue;
         if (!Boolean(key.trim()) || !Boolean(obj[key].trim())) continue;
 
@@ -202,6 +202,7 @@ function renderCard(obj) {
                     <div class='badge bg-${status} w-auto'> ${vString}</div>
                 </div>`
             });
+            continue;
         };
 
         for (let category in normaliser) {
@@ -231,9 +232,7 @@ function renderCard(obj) {
     let stringifiedObj = stringifyObject(obj);
     final.push(createRow(
         "Share",
-        `<a class='d-inline' target='blank' href='https://api.whatsapp.com/send?text=${encodeURIComponent(stringifiedObj)}'>
-            <i class="fa fa-whatsapp fs-1 mx-1" aria-hidden="true"></i>
-        </a>
+        `<a class='d-inline' target='blank' href='https://api.whatsapp.com/send?text=${encodeURIComponent(stringifiedObj)}'><i class="fa fa-whatsapp fs-1 mx-1" aria-hidden="true"></i></a>
         <a class='d-inline' onclick='copyToClipboard(\`${stringifiedObj}\`)'>
             <i class="fa fa-clone fs-1 mx-1" aria-hidden="true"></i>
         </a>`,
