@@ -312,7 +312,7 @@ function renderStateResourceData(list, stateName, resName) {
 
 function onUserInput() {
     let submit = document.getElementById('submit-button');
-    submit.disabled = !((App.data.selectedResources && App.data.selectedResources !== []) && App.data.state);
+    submit.disabled = !((App.data.selectedResources && App.data.selectedResources.length > 0) && App.data.state);
     return submit.disabled;
 }
 
