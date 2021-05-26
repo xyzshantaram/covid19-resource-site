@@ -122,6 +122,33 @@ function createRow(k, v, icon, textClass) {
         if (textClass) return textClass;
         return "fs-6 text-wrap d-inline";
     }
+	
+	function getPhoneRow(phNo){
+		var actPhNo=phNo.replace(/\D/g, "");
+		return "<a href='tel://"+actPhNo+"'>"+phNo+"</a>"
+	}
+	
+	if("phone" == k){
+		let tempv = v;
+		if(tempv.indexOf('/')>0){
+			let ph = tempv.split("/");
+			v="";
+			for (const val of ph) {
+				v=v+"  "+getPhoneRow(val.trim());
+			}
+		}
+		else if(tempv.indexOf(',')>0){
+			let ph = tempv.split(",");
+			v="";
+			for (const val of ph) {
+				v=v+"  "+getPhoneRow(val.trim());
+			}
+		}else{
+			v= getPhoneRow(tempv.trim());
+		}
+		
+		
+	}
     return {
         k: k,
         v: v,
@@ -320,7 +347,10 @@ function submitButtonHandler() {
     loadingModal.show();
     let finalResources = []
     let resources = App.data.selectedResources;
-    let length = resources.length;
+    let length = 0;
+	if(resources){
+		length = resources.length;
+	}
     let loadedCount = 0;
     let attempts = 0;
     let nextCalled = false;
