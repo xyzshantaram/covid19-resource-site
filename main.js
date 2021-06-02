@@ -122,6 +122,27 @@ function createRow(k, v, icon, textClass) {
         if (textClass) return textClass;
         return "fs-6 text-wrap d-inline";
     }
+
+    function createTelLink(phNo) {
+        //Removing the digits alone from the phone number
+        var actualPhNo = phNo.replace(/\D/g, "");
+        if (!actualPhNo || actualPhNo === '' || actualPhNo.length < 4 || actualPhNo.length > 15)
+            return false;
+        else
+            return `<a href="tel://${actualPhNo}">${phNo}</a>`;
+    }
+    if ("phone" == k) {
+        let tempv = v;
+        v = "";
+        let phoneNos = tempv.split(/[,/]+/);
+        for (const phoneNo of phoneNos) {
+            let temp = createTelLink(phoneNo.trim());
+            if (temp)
+                v = v + "  " + temp;
+            else
+                v = tempv;
+        }
+    }
     return {
         k: k,
         v: v,
@@ -320,7 +341,10 @@ function submitButtonHandler() {
     loadingModal.show();
     let finalResources = []
     let resources = App.data.selectedResources;
-    let length = resources.length;
+    let length = 0;
+    if (resources) {
+        length = resources.length;
+    }
     let loadedCount = 0;
     let attempts = 0;
     let nextCalled = false;
