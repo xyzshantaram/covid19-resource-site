@@ -124,9 +124,9 @@ function createRow(k, v, icon, textClass) {
     }
 
     function createTelLink(phNo) {
-        //Removing the digits alone from the phone number
+        //Removing non-digits alone from the phone number
         var actualPhNo = phNo.replace(/\D/g, "");
-        if (!actualPhNo || actualPhNo === '' || actualPhNo.length < 4 || actualPhNo.length > 15)
+        if (!actualPhNo || actualPhNo === '' || actualPhNo.length < 7 || actualPhNo.length > 15)
             return false;
         else
             return `<a href="tel://${actualPhNo}">${phNo}</a>`;
@@ -214,6 +214,7 @@ function renderCard(obj) {
         if ((/.*(verified)|(timestamp)|(service provider state).*/i).test(key)) continue;
         if (!Boolean(key) || !Boolean(obj[key])) continue;
         if (!Boolean(key.trim()) || !Boolean(obj[key].trim())) continue;
+        if ((/.*number.*/i).test(key) && (!obj[key] || obj[key] && obj[key].length < 7)) continue;
 
         if ((/.*type of service.*/i).test(key)) {
             final.unshift({
