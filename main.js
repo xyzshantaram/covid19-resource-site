@@ -347,7 +347,6 @@ function submitButtonHandler() {
         length = resources.length;
     }
     let loadedCount = 0;
-    let attempts = 0;
     let nextCalled = false;
 
     function next() {
@@ -451,4 +450,4 @@ function init() {
     getFileFromURL(App.master, "Index", onGetMasterSuccess); // get file, since we don't have a cached version of the file.
 }
 
-window.onload = init;
+window.addEventListener('DOMContentLoaded', () => init());
