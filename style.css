@@ -1,113 +1,113 @@
 * {
-    font-family: "Inter", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .landing-body {
-    background: #f4f7f6;
+  background: #f4f7f6;
 }
 
 .card {
-    border-radius: .5em !important;
-    margin: 10px;
+  border-radius: 0.5em !important;
+  margin: 10px;
 }
 
-.btn-check:focus+.btn,
+.btn-check:focus + .btn,
 .btn:focus {
-    outline: 0;
-    box-shadow: none;
+  outline: 0;
+  box-shadow: none;
 }
 
 .head {
-    background: #EFEFEF;
+  background: #efefef;
 }
 
 .container {
-    border-radius: 6px;
-    max-width: 65%;
+  border-radius: 6px;
+  max-width: 65%;
 }
 
 .resource-btn {
-    font-size: 1em !important;
-    padding: 0.1em;
-    margin: 0.1em;
+  font-size: 1em !important;
+  padding: 0.1em;
+  margin: 0.1em;
 }
 
 .logos img {
-    max-height: 7vh;
-    margin: 12px;
-    margin-top: 0;
+  max-height: 7vh;
+  margin: 12px;
+  margin-top: 0;
 }
 
-body>.container {
-    max-width: 80ch;
+body > .container {
+  max-width: 80ch;
 }
 
 .display-font {
-    font-family: 'Staatliches', serif !important;
-    font-size: 2em;
+  font-family: "Staatliches", serif !important;
+  font-size: 2em;
 }
 
 .disclaimer {
-    font-size: 0.8em;
+  font-size: 0.8em;
 }
 
-label[for='information'] {
-    font-weight: 600;
+label[for="information"] {
+  font-weight: 600;
 }
 
 #copy-alert {
-    opacity: 0;
-    width: 20vw;
-    height: 10vh;
-    position: fixed;
-    z-index: 2000;
-    bottom: 1em;
-    right: 1em;
+  opacity: 0;
+  width: 20vw;
+  height: 10vh;
+  position: fixed;
+  z-index: 2000;
+  bottom: 1em;
+  right: 1em;
 }
 
 @keyframes fadein {
-    0% {
-        opacity: 0;
-    }
+  0% {
+    opacity: 0;
+  }
 
-    50% {
-        opacity: 1;
-    }
+  50% {
+    opacity: 1;
+  }
 
-    100% {
-        opacity: 1;
-    }
+  100% {
+    opacity: 1;
+  }
 }
 
 @media not all and (hover: none) {
-    .btn:hover {
-        background: #198754;
-        color: #f8f9fa;
-    }
+  .btn:hover {
+    background: #198754;
+    color: #f8f9fa;
+  }
 }
 
 @media only screen and (max-aspect-ratio: 1/1) {
-    body>.container {
-        max-width: max-content;
-    }
+  body > .container {
+    max-width: max-content;
+  }
 
-    .display-font {
-        font-size: 1.5em;
-    }
+  .display-font {
+    font-size: 1.5em;
+  }
 
-    #copy-alert {
-        opacity: 0;
-        max-width: 100%;
-        max-height: 100%;
-        min-width: 90%;
-        min-height: 10%;
-        width: 90%;
-        height: 10%;
-        position: fixed;
-        z-index: 2000;
-        bottom: 1em;
-        right: 5%;
-        left: 5%;
-        bottom: 2%;
-    }
+  #copy-alert {
+    opacity: 0;
+    max-width: 100%;
+    max-height: 100%;
+    min-width: 90%;
+    min-height: 10%;
+    width: 90%;
+    height: 10%;
+    position: fixed;
+    z-index: 2000;
+    bottom: 1em;
+    right: 5%;
+    left: 5%;
+    bottom: 2%;
+  }
 }
